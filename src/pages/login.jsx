@@ -57,7 +57,7 @@ const LoginPage = () => {
 
     return (
         <Box
-            className="auth-bg-pattern"
+            className="auth-bg-pattern" // isse bo square pattern aa raha hai background me
             sx={{
                 minHeight: "100%",
                 display: "flex",
