@@ -145,3 +145,221 @@ const ProductCard = ({ product,onDelete,onFetch,onShowMessage,onShowMessage2 }) 
 };
 
 export default ProductCard;
+
+
+
+
+
+////////
+
+
+// import React, { useState } from "react";
+// import { getUserFromToken } from "../utils/auth";
+// import { IconButton } from "@mui/material";
+// import { useNavigate } from "react-router-dom";
+
+// // Cart icon inline (avoids MUI icon bundle if preferred, swap back if needed)
+// const CartIcon = () => (
+//   <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+//     stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+//     <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+//     <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+//   </svg>
+// );
+
+// const T = {
+//   ink: "#1C1410",
+//   inkFaint: "#A0917F",
+//   teal: "#0f766e",
+//   tealLight: "rgba(13,148,136,0.08)",
+//   tealBorder: "rgba(13,148,136,0.22)",
+//   border: "rgba(60,40,20,0.08)",
+//   parchment: "#F3EFE8",
+//   red: "#C0392B",
+//   redLight: "rgba(192,57,43,0.08)",
+//   redBorder: "rgba(192,57,43,0.2)",
+// };
+
+// const ProductCard = ({ product, onDelete, onFetch, onShowMessage, onShowMessage2 }) => {
+//   const user = getUserFromToken();
+//   const isAdmin = user?.role === "admin";
+//   const [loading, setLoading] = useState(false);
+//   const navigate = useNavigate();
+
+//   const addToCart = async () => {
+//     try {
+//       const token = localStorage.getItem("CommerceToken");
+//       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/cart/${product._id}`, {
+//         method: "POST",
+//         headers: { Authorization: `Bearer ${token}` },
+//       });
+//       const data = await res.json();
+//       if (res.ok) { onShowMessage2(); }
+//       else { console.error(data.message); }
+//     } catch (err) { console.error("Error:", err); }
+//   };
+
+//   const deleteProduct = async () => {
+//     try {
+//       setLoading(true);
+//       const token = localStorage.getItem("CommerceToken");
+//       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/${product._id}`, {
+//         method: "DELETE",
+//         headers: { Authorization: `Bearer ${token}` },
+//       });
+//       if (res.ok) {
+//         onDelete(product._id);
+//         onShowMessage();
+//         onFetch();
+//       }
+//     } catch (error) { console.log(error); }
+//     finally { setLoading(false); }
+//   };
+
+//   const inStock = product.stock > 0;
+
+//   return (
+//     <article className="group relative flex flex-col rounded-2xl bg-white overflow-hidden transition duration-300 hover:-translate-y-0.5"
+//       style={{
+//         border: `1px solid ${T.border}`,
+//         boxShadow: "0 2px 16px rgba(28,20,16,0.05)",
+//       }}
+//       onMouseEnter={e => {
+//         e.currentTarget.style.boxShadow = "0 12px 36px -16px rgba(15,118,110,0.28)";
+//         e.currentTarget.style.borderColor = T.tealBorder;
+//       }}
+//       onMouseLeave={e => {
+//         e.currentTarget.style.boxShadow = "0 2px 16px rgba(28,20,16,0.05)";
+//         e.currentTarget.style.borderColor = T.border;
+//       }}
+//     >
+//       {/* Image */}
+//       <div className="relative overflow-hidden flex items-center justify-center"
+//         style={{ background: `linear-gradient(145deg, #F8F5F0, ${T.parchment})`, height: 180, padding: 16 }}>
+//         <img
+//           src={product.images[0]?.url}
+//           alt={product.name}
+//           className="w-full h-full object-contain transition duration-500 group-hover:scale-[1.04]"
+//         />
+//       </div>
+
+//       {/* Body */}
+//       <div className="flex flex-col flex-1 p-4">
+//         <span style={{
+//           fontSize: 10.5, fontWeight: 600, textTransform: "uppercase",
+//           letterSpacing: "0.1em", color: T.teal, marginBottom: 4,
+//           fontFamily: "'DM Sans', sans-serif",
+//         }}>
+//           {product.category}
+//         </span>
+
+//         <h2 style={{
+//           fontFamily: "'Cormorant Garamond', serif",
+//           fontWeight: 700, fontSize: "1.1rem", lineHeight: 1.25,
+//           color: T.ink, marginBottom: 5,
+//           display: "-webkit-box", WebkitLineClamp: 2,
+//           WebkitBoxOrient: "vertical", overflow: "hidden",
+//         }}>
+//           {product.name}
+//         </h2>
+
+//         <p style={{
+//           fontSize: 12, color: T.inkFaint, lineHeight: 1.55, marginBottom: 12,
+//           display: "-webkit-box", WebkitLineClamp: 2,
+//           WebkitBoxOrient: "vertical", overflow: "hidden",
+//           fontFamily: "'DM Sans', sans-serif",
+//         }}>
+//           {product.description}
+//         </p>
+
+//         <p style={{
+//           fontFamily: "'Cormorant Garamond', serif",
+//           fontWeight: 700, fontSize: "1.35rem", color: T.ink, marginBottom: 10,
+//         }}>
+//           ₹{product.price}
+//         </p>
+
+//         {/* Stock badge */}
+//         <span style={{
+//           display: "inline-flex", alignItems: "center", gap: 6,
+//           padding: "4px 10px", borderRadius: 20, fontSize: 10.5, fontWeight: 600,
+//           fontFamily: "'DM Sans', sans-serif",
+//           ...(inStock
+//             ? { background: "#F0FDF8", color: T.teal, border: `1px solid rgba(13,148,136,0.2)` }
+//             : { background: T.redLight, color: T.red, border: `1px solid ${T.redBorder}` }
+//           ),
+//         }}>
+//           <span style={{
+//             width: 5, height: 5, borderRadius: "50%",
+//             background: inStock ? T.teal : T.red,
+//           }} />
+//           {inStock ? `In Stock (${product.stock})` : "Out of Stock"}
+//         </span>
+//       </div>
+
+//       {/* User: floating cart button */}
+//       {!isAdmin && (
+//         <IconButton
+//           className="opacity-0 translate-y-2 scale-95 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:scale-100 group-hover:pointer-events-auto transition-all duration-300 ease-out"
+//           size="small"
+//           onClick={addToCart}
+//           sx={{
+//             position: "absolute", bottom: 14, right: 14,
+//             width: 36, height: 36, borderRadius: "10px",
+//             color: T.teal, backgroundColor: "#fff",
+//             border: `1px solid ${T.tealBorder}`,
+//             boxShadow: "0 6px 18px -8px rgba(15,118,110,0.45)",
+//             transition: "all 0.2s ease",
+//             "&:hover": {
+//               backgroundColor: T.tealLight,
+//               borderColor: "rgba(13,148,136,0.45)",
+//               boxShadow: "0 10px 24px -10px rgba(15,118,110,0.55)",
+//               transform: "translateY(-1px) scale(1.05)",
+//             },
+//           }}
+//         >
+//           <CartIcon />
+//         </IconButton>
+//       )}
+
+//       {/* Admin: edit/delete footer */}
+//       {isAdmin && (
+//         <div style={{
+//           display: "flex", gap: 8, padding: "10px 16px 14px",
+//           borderTop: `1px solid rgba(60,40,20,0.07)`,
+//         }}>
+//           <button
+//             onClick={() => navigate(`/admin/products/editProduct/${product._id}`, { state: { product } })}
+//             style={{
+//               flex: 1, borderRadius: 8, border: `1px solid rgba(60,40,20,0.14)`,
+//               background: "transparent", color: "#6B5B4E",
+//               fontFamily: "'DM Sans', sans-serif", fontSize: 12, fontWeight: 600,
+//               padding: "8px 0", cursor: "pointer", transition: "all 0.15s",
+//             }}
+//             onMouseEnter={e => { e.target.style.background = T.tealLight; e.target.style.color = T.teal; e.target.style.borderColor = T.tealBorder; }}
+//             onMouseLeave={e => { e.target.style.background = "transparent"; e.target.style.color = "#6B5B4E"; e.target.style.borderColor = "rgba(60,40,20,0.14)"; }}
+//           >
+//             Edit
+//           </button>
+//           <button
+//             onClick={deleteProduct}
+//             disabled={loading}
+//             style={{
+//               flex: 1, borderRadius: 8, border: `1px solid ${T.redBorder}`,
+//               background: "transparent", color: T.red,
+//               fontFamily: "'DM Sans', sans-serif", fontSize: 12, fontWeight: 600,
+//               padding: "8px 0", cursor: loading ? "not-allowed" : "pointer",
+//               transition: "all 0.15s", opacity: loading ? 0.65 : 1,
+//             }}
+//             onMouseEnter={e => { if (!loading) { e.target.style.background = T.red; e.target.style.color = "#fff"; } }}
+//             onMouseLeave={e => { e.target.style.background = "transparent"; e.target.style.color = T.red; }}
+//           >
+//             {loading ? "Deleting…" : "Delete"}
+//           </button>
+//         </div>
+//       )}
+//     </article>
+//   );
+// };
+
+// export default ProductCard;
