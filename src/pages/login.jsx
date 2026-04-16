@@ -67,7 +67,7 @@ const LoginPage = () => {
                 px: 2,
             }}
         >
-            <form onSubmit={handleSubmit(onSubmiting)} style={{ width: "100%", maxWidth: 400 }}>
+            <form onSubmit={handleSubmit(onSubmiting)} style={{ width: "100%", maxWidth: 400 }} noValidate>
                 <Paper
                     elevation={0}
                     sx={{
@@ -81,7 +81,7 @@ const LoginPage = () => {
                 >
                     <Box display="flex" flexDirection="column" gap={2}>
                         <Typography variant="h5" textAlign="center" fontWeight={700}>
-                            Login
+                            Welcome back
                         </Typography>
                         <Typography variant="body2" textAlign="center" color="text.secondary" sx={{ mb: -0.5 }}>
                             Sign in to your Ecomora account
@@ -135,6 +135,12 @@ const LoginPage = () => {
                             Don&apos;t have an account?{" "}
                             <Link to="/" style={{ color: "#0f766e", fontWeight: 700, textDecoration: "none" }}>
                                 Register
+                            </Link>
+                        </Typography>
+                        <Typography textAlign="center" variant="body2" color="text.secondary">
+                            Trouble signing in?{" "}
+                            <Link to="/reset" style={{ color: "#0f766e", fontWeight: 700, textDecoration: "none" }}>
+                                Reset your password
                             </Link>
                         </Typography>
                     </Box>
