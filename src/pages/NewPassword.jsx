@@ -2,10 +2,11 @@ import { Box, Typography, Paper, TextField, Button } from '@mui/material'
 import React from 'react'
 import { useForm } from 'react-hook-form'
 import { useParams, Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 const NewPassword = () => {
     const { token } = useParams() // params ek object hai to usse nikaloge to destructure karke nikaloge
-
+    const navigate = useNavigate()
     const {
         register,
         handleSubmit,
@@ -13,10 +14,34 @@ const NewPassword = () => {
         formState: { errors, isSubmitting },
     } = useForm()
 
-    const password = watch("password")
+    const password = watch("password") //Form ke password field ki current value de de, jisse iska use karke ham compare kar rahe hai value===password
 
     const submitting = async (data) => {
-        console.log(data, token) // tu backend connect karega
+        try {
+            if (!token) {
+                alert("Invalid or missing token")
+                return;
+            }
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/reset-password/${token}`, {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({ password: data.password })
+            })
+            const result = await res.json();
+            if (!res.ok) {
+                alert(result.message)
+                return;
+            }
+            alert(result.message)
+            setTimeout(() => {
+                navigate("/login");
+            }, 1000);
+
+        } catch (error) {
+
+            console.log(error)
+            alert("Something went wrong. Please try again.")
+        }
     }
 
     return (
