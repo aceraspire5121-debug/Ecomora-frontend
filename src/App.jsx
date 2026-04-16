@@ -9,6 +9,7 @@ import EditProduct from "./pages/EditProduct";
 import Cart from "./pages/Cart";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ResetPassword from "./pages/ResetPassword";
+import NewPassword from "./pages/NewPassword";
 function App() {
   return (
     <BrowserRouter>
@@ -16,6 +17,7 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/" element={<RegisterPage />} />
         <Route path="/reset" element={<ResetPassword />} />
+        <Route path="/reset-password/:token" element={<NewPassword />} />
         <Route path="/user/products" element={<ProtectedRoute><ProductPage/></ProtectedRoute>} />
         <Route path={"/admin/products"} element={<ProtectedRoute><AdminPage/></ProtectedRoute>} />
         <Route path={"/admin/products/newProduct"} element={<ProtectedRoute><AddProduct/></ProtectedRoute>} />

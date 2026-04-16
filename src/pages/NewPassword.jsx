@@ -1,39 +1,22 @@
-import { Box, Typography, Paper, TextField, Button, CircularProgress } from '@mui/material'
+import { Box, Typography, Paper, TextField, Button } from '@mui/material'
 import React from 'react'
 import { useForm } from 'react-hook-form'
-import { Link } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
 
-const ResetPassword = () => {
+const NewPassword = () => {
+    const { token } = useParams() // params ek object hai to usse nikaloge to destructure karke nikaloge
+
     const {
         register,
         handleSubmit,
-        setError,
         watch,
-        clearErrors,
         formState: { errors, isSubmitting },
     } = useForm()
 
-    const submitting = async (e) => {
-        try {
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/reset/checkemail`, {
-                method: "POST",
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify({ email: e.email })
-            })
-            const result = await res.json()
-            if (!res.ok) // true:- 200 to 299, false:-400,401,404,500 etc
-            {
-                alert(result.message)
-                return;
-            }
+    const password = watch("password")
 
-            console.log("success")
-            alert(result.message)
-
-
-        } catch (error) {
-            console.log(error)
-        }
+    const submitting = async (data) => {
+        console.log(data, token) // tu backend connect karega
     }
 
     return (
@@ -64,7 +47,7 @@ const ResetPassword = () => {
 
                         {/* Heading */}
                         <Typography variant="h5" textAlign="center" fontWeight={700}>
-                            Reset your password
+                            Create new password
                         </Typography>
 
                         {/* Subtext */}
@@ -74,25 +57,39 @@ const ResetPassword = () => {
                             color="text.secondary"
                             sx={{ mb: -0.5 }}
                         >
-                            Enter your email to receive a reset link
+                            Enter your new password below
                         </Typography>
 
-                        {/* Email Input */}
+                        {/* Password */}
                         <TextField
-                            label="Email"
-                            type="email"
+                            label="New Password"
+                            type="password"
                             fullWidth
                             sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
-                            {...register("email", {
-                                required: "Email is required",
-                                onChange: () => clearErrors("MyError"),
+                            {...register("password", {
+                                required: "Password is required", minLength: { value: 6, message: "Password should be of minimum 6 characters" }, maxLength: { value: 15, message: "Password should be of maximum 15 characters" },
                                 pattern: {
-                                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                                    message: "Enter a valid email address"
+                                    value: /^(?=.*[A-Za-z])(?=.*\d).{6,}$/,
+                                    message: "Password must be at least 6 characters and include letters and numbers"
                                 }
                             })}
-                            error={!!errors.email}
-                            helperText={errors.email?.message}
+                            error={!!errors.password}
+                            helperText={errors.password?.message}
+                        />
+
+                        {/* Confirm Password */}
+                        <TextField
+                            label="Confirm Password"
+                            type="password"
+                            fullWidth
+                            sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
+                            {...register("confirmPassword", {
+                                required: "Please confirm your password",
+                                validate: (value) => // value current ki value hai
+                                    value === password || "Passwords do not match"
+                            })}
+                            error={!!errors.confirmPassword}
+                            helperText={errors.confirmPassword?.message}
                         />
 
                         {/* Button */}
@@ -103,11 +100,7 @@ const ResetPassword = () => {
                             fullWidth
                             disabled={isSubmitting}
                         >
-                            {isSubmitting ? (
-                                <CircularProgress size={24} color="inherit" />
-                            ) : (
-                                "Send reset link"
-                            )}
+                            Reset Password
                         </Button>
 
                         {/* Back to login */}
@@ -125,4 +118,4 @@ const ResetPassword = () => {
     )
 }
 
-export default ResetPassword
+export default NewPassword
