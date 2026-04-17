@@ -109,6 +109,24 @@ const CartCont = () => {
     }
   }
 
+const paymentHandle=async ()=>{
+  try{
+    const token=localStorage.getItem("CommerceToken")
+    const res=await fetch(`${import.meta.env.VITE_API_URL}/api/payment-start/create`,{
+      method:"POST",
+      headers:{"content-type":"application/json",Authorization:`Bearer ${token}`},
+    })
+    const result=await res.json()
+    if(!res.ok)
+      alert(result.message)
+    console.log("success",result)
+
+  }catch(err)
+  {
+ console.log(err)
+  }
+}
+
   return (
     <Box
       sx={{
@@ -272,6 +290,7 @@ const CartCont = () => {
                 fontWeight: 800,
                 background: "linear-gradient(135deg, #0f766e 0%, #0d9488 60%, #14b8a6 100%)",
               }}
+              onClick={paymentHandle}
             >
               Checkout
             </Button>
