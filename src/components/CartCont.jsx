@@ -109,23 +109,68 @@ const CartCont = () => {
     }
   }
 
-const paymentHandle=async ()=>{
-  try{
-    const token=localStorage.getItem("CommerceToken")
-    const res=await fetch(`${import.meta.env.VITE_API_URL}/api/payment-start/create`,{
-      method:"POST",
-      headers:{"content-type":"application/json",Authorization:`Bearer ${token}`},
-    })
-    const result=await res.json()
-    if(!res.ok)
-      alert(result.message)
-    console.log("success",result)
+  const paymentHandle = async () => {
+    try {
+      // console.log(window.Razorpay)
+      const token = localStorage.getItem("CommerceToken")
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/payment-start/create`, {
+        method: "POST",
+        headers: { "content-type": "application/json", Authorization: `Bearer ${token}` },
+      })
+      const result = await res.json()
+      if (!res.ok)
+        alert(result.message)
+      console.log("success", result)
 
-  }catch(err)
-  {
- console.log(err)
+      const options = {
+        key: "rzp_test_Seeukkl8eo0TXu", // apni key id
+        amount: result.amount,
+        currency: result.currency,
+        name: "Ecomora",
+        description: "Test Transaction",
+        order_id: result.order_id,
+        method: {
+          upi: true,
+          card: true,
+          netbanking: true,
+          wallet: true,
+        },
+
+        handler: async function (response) {  // callback function jo ki payment success hone ke baad chalta hai aur jo bhi razorpay bhejta hai bo recieve karta hai
+          // console.log(response)
+          try {
+            const token = localStorage.getItem("CommerceToken")
+            if (!token) {
+              alert("Please login again");
+              return;
+            }
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/payments/verify-payment`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, // token dubara isliye bheja ki agar manlo koi banda postman ke through post request mar de jisme bo razorpay id signature baghera bhej de aur backend me koi bug ho gaya ho, to unauhtorised banda jo ki tumhari website par hai hi nhi bo bhi order place kar dega
+              body: JSON.stringify(response) // different values agar combine karni hoti hai tab object banate hai aur usme dal dete hai par yaha par to response already ek object hai to bo aise hi chala jayega
+            })
+            const result = await res.json();
+            if (!res.ok) {
+              console.log("payment failed", result)
+              alert(result.message)
+              return;
+            }
+            console.log("payment successful", result)
+            alert(result.message)
+          } catch (error) {
+            console.log(error)
+            alert("Something went wrong")
+          }
+        }
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+
+    } catch (err) {
+      console.log(err)
+    }
   }
-}
 
   return (
     <Box
