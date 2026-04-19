@@ -10,6 +10,7 @@ import Cart from "./pages/Cart";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ResetPassword from "./pages/ResetPassword";
 import NewPassword from "./pages/NewPassword";
+import OrderSuccess from "./pages/Receipt";
 function App() {
   return (
     <BrowserRouter>
@@ -23,6 +24,7 @@ function App() {
         <Route path={"/admin/products/newProduct"} element={<ProtectedRoute><AddProduct/></ProtectedRoute>} />
         <Route path={"/admin/products/editProduct/:id"} element={<ProtectedRoute><EditProduct/></ProtectedRoute>} />
         <Route path={"/users/cart"} element={<ProtectedRoute><Cart/></ProtectedRoute>} />
+        <Route path={"/users/receipt/:id"} element={<ProtectedRoute><OrderSuccess/></ProtectedRoute>} />
       </Routes>
     </BrowserRouter>
   );

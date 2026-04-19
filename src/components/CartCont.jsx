@@ -14,6 +14,7 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import { useNavigate } from "react-router-dom";
 
 const CartCont = () => {
   const [cartItems, setcartItems] = useState([]) // array of objects
@@ -23,6 +24,7 @@ const CartCont = () => {
   const [severity, setseverity] = useState("")
   const requestId = useRef(0)
   const oldcart = useRef([])
+  const navigate=useNavigate();
 
   const showSnackbar=(message,type="success")=>{
   setmsg(message);
@@ -167,6 +169,9 @@ const CartCont = () => {
             console.log("payment successful", result)
             showSnackbar("Order placed successfully","success")
             await fetchCart()
+            setTimeout(() => {
+              navigate(`/users/receipt/${result.order._id}`)
+            }, 2000);
           } catch (error) {
             console.log(error)
             alert("Something went wrong")
