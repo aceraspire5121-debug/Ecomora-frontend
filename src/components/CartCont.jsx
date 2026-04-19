@@ -18,9 +18,17 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 const CartCont = () => {
   const [cartItems, setcartItems] = useState([]) // array of objects
   const [open, setopen] = useState(false)
-  const [open2, setopen2] = useState(false)
+  // const [open2, setopen2] = useState(false)
+  const [msg, setmsg] = useState("")
+  const [severity, setseverity] = useState("")
   const requestId = useRef(0)
   const oldcart = useRef([])
+
+  const showSnackbar=(message,type="success")=>{
+  setmsg(message);
+  setseverity(type)
+  setopen(true)
+  }
 
   const fetchCart = async () => {
     const token = localStorage.getItem("CommerceToken")
@@ -76,9 +84,9 @@ const CartCont = () => {
     } catch (err) {
       if (currentRequest === requestId.current) // manlo request 2 fail hui to bo apne instance me aaya jaha par currentrequest=2 hoga, bo check karega ki kya currentRequest===requestId.current hai par manlo third click se requestId.current 3 ho gaya hai to yaha fail ho jayega aur koi  update nhi karega
       {
-        setopen2(true)
+        showSnackbar("Failed to update","error");
         try {
-          await fetchCart()
+          await fetchCart() // jaise 3 se 6 hua to har click par state update hui 3se 4 4 se 5 , 5 se 6 par backend me integrate nhi hua due to server issue to bahapar failed update likhkar aa gaya par value state ki bajah se update ho gyi, isliye is ui problem ko solve karne ke liye hamne fetch kar lia sedha backend se, par backend problem manlo kebal update bale me nhi whole servr issue hai to uske liye backup copy rakhi hai data ki oldcart bo dal dia to multiple scenarios ko handle kar raha hu
         } catch (err) {
           if (currentRequest === requestId.current)
             setcartItems(oldcart.current)
@@ -99,11 +107,12 @@ const CartCont = () => {
       const data = await res.json();
       if (res.ok) {
         console.log(data.message);
-        setopen(true)
+        showSnackbar("Removed from cart","success")
       } else {
         console.error(data.message);
       }
       setcartItems(data.cart.items)
+      oldcart.current = structuredClone(data.cart.items)
     } catch (err) {
       console.error("Error:", err);
     }
@@ -113,7 +122,7 @@ const CartCont = () => {
     try {
       // console.log(window.Razorpay)
       const token = localStorage.getItem("CommerceToken")
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/payment-start/create`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/payments/create`, {
         method: "POST",
         headers: { "content-type": "application/json", Authorization: `Bearer ${token}` },
       })
@@ -152,11 +161,12 @@ const CartCont = () => {
             const result = await res.json();
             if (!res.ok) {
               console.log("payment failed", result)
-              alert(result.message)
+              showSnackbar("Unable to place order. Please try again","error")
               return;
             }
             console.log("payment successful", result)
-            alert(result.message)
+            showSnackbar("Order placed successfully","success")
+            await fetchCart()
           } catch (error) {
             console.log(error)
             alert("Something went wrong")
@@ -357,25 +367,11 @@ const CartCont = () => {
         anchorOrigin={{ vertical: "top", horizontal: "right" }} // position lagayi hai uski
       >
         <Alert
-          severity="success"
+          severity={severity}
           variant="filled"
           onClose={() => setopen(false)}
         >
-          Removed from cart
-        </Alert>
-      </Snackbar>
-      <Snackbar
-        open={open2}
-        autoHideDuration={2000}
-        onClose={() => setopen2(false)} // jab ye band hoga to jate jate ye setopen ko false kar dega aur iski bajah se, snackbar jo ki open the open={true} par bo open=false hone par fir close ho jayega, to ek tareeke se ye apne aap ko ui se hi hide kar raha hai onclose par
-        anchorOrigin={{ vertical: "top", horizontal: "right" }} // position lagayi hai uski
-      >
-        <Alert
-          severity="error"
-          variant="filled"
-          onClose={() => setopen2(false)}
-        >
-          Failed to update
+         {msg}
         </Alert>
       </Snackbar>
     </Box>

@@ -1,4 +1,4 @@
-import { TextField, Button, Box, Typography, Alert, CircularProgress, Paper } from "@mui/material";
+import { TextField, Button, Box, Typography, Alert, CircularProgress, Paper,Snackbar } from "@mui/material";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
@@ -13,6 +13,16 @@ const RegisterPage = () => {
         clearErrors,
         formState: { errors, isSubmitting },
     } = useForm()
+
+    const [msg, setmsg] = useState("")
+    const [open, setopen] = useState(false)
+    const [severity, setseverity] = useState("")
+
+    const showSnackbar=(message,type="success")=>{
+    setmsg(message)
+    setseverity(type)
+    setopen(true)
+    }
 
     const navigate = useNavigate()
     // handle submit
@@ -38,8 +48,10 @@ const RegisterPage = () => {
             // false → error (400, 500 etc.)
 
             console.log(newdata.message)
-            alert("Check your gmail to verify your email");
-            navigate("/login")
+           showSnackbar("Check your email to verify your account", "info");
+            setTimeout(() => {
+               navigate("/login") 
+            }, 2000);
         } catch (error) {
             console.log("Netword Error", error)
         }
@@ -158,6 +170,20 @@ const RegisterPage = () => {
                     </Box>
                 </Paper>
             </form>
+            <Snackbar
+                    open={open}
+                    autoHideDuration={2000}
+                    onClose={() => setopen(false)} // jab ye band hoga to jate jate ye setopen ko false kar dega aur iski bajah se, snackbar jo ki open the open={true} par bo open=false hone par fir close ho jayega, to ek tareeke se ye apne aap ko ui se hi hide kar raha hai onclose par
+                    anchorOrigin={{ vertical: "top", horizontal: "right" }} // position lagayi hai uski
+                  >
+                    <Alert
+                      severity={severity}
+                      variant="filled"
+                      onClose={() => setopen(false)}
+                    >
+                     {msg}
+                    </Alert>
+                  </Snackbar>
         </Box>
     );
 };
