@@ -93,7 +93,14 @@ const ProductCard = ({ product,onDelete,onFetch,onShowMessage,onShowMessage2 }) 
 
       {!isAdmin && ( // i have given group to the parent i.e article so by this now i can apply on child whenever parent is hovered, apply group-hover.. to the child
        <IconButton
-    className="opacity-0 translate-y-2 scale-95 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:scale-100 group-hover:pointer-events-auto transition-all duration-300 ease-out"
+    className="
+  opacity-100 
+  md:opacity-0 md:group-hover:opacity-100
+  translate-y-0 md:translate-y-2 md:group-hover:translate-y-0
+  scale-100 md:scale-95 md:group-hover:scale-100
+  pointer-events-auto md:pointer-events-none md:group-hover:pointer-events-auto
+  transition-all duration-300 ease-out
+"
     size="small"
     onClick={addToCart}
     sx={{
