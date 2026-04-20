@@ -141,7 +141,7 @@ const CartCont = () => {
         description: "Test Transaction",
         order_id: result.order_id,
         method: {
-          upi: true,
+          upi: false,
           card: true,
           netbanking: true,
           wallet: true,
