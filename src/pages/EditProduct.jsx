@@ -73,7 +73,9 @@ const savingProduct= async (data)=>{
      setopen(true)
      reset() // jaise hi add hua reset kar dia mtlb sab kuch khali kar dia
      setimages([])
-     navigate("/admin/products")
+     setTimeout(() => {
+      navigate("/admin/products")
+     }, 1000);
      }
       const result = await res.json();
     console.log(result);
@@ -328,7 +330,7 @@ const savingProduct= async (data)=>{
             </Button>
 
             <Button
-              type="submit"
+              type="submit" // ye type equal to submit decide kar raha hai ki iske click hone par form submit hoga jisse saving products trigger hoga
               variant="contained"
               disabled={loading}
               sx={{
