@@ -97,7 +97,8 @@ const Navbar = () => {
               onClick={()=>navigate("/users/cart")} >
                 Cart
               </Button>
-              <Button sx={navBtn(false)} disabled>
+              <Button sx={navBtn(location.pathname==="/users/orders")} 
+              onClick={()=>navigate("/users/orders")} >
                 Purchases
               </Button>
             </>

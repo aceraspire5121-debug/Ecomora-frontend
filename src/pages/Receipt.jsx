@@ -228,7 +228,7 @@ const OrderSuccess = () => {
             Browse products
           </button>
           <button
-            onClick={() => navigate("/user/orders")}
+            onClick={() => navigate("/users/orders")}
             style={{
               flex: 1, height: 42, borderRadius: 10,
               background: T.ink, border: "none",

@@ -11,6 +11,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import ResetPassword from "./pages/ResetPassword";
 import NewPassword from "./pages/NewPassword";
 import OrderSuccess from "./pages/Receipt";
+import OrdersPage from "./pages/Order";
 function App() {
   return (
     <BrowserRouter>
@@ -25,6 +26,7 @@ function App() {
         <Route path={"/admin/products/editProduct/:id"} element={<ProtectedRoute><EditProduct/></ProtectedRoute>} />
         <Route path={"/users/cart"} element={<ProtectedRoute><Cart/></ProtectedRoute>} />
         <Route path={"/users/receipt/:id"} element={<ProtectedRoute><OrderSuccess/></ProtectedRoute>} />
+        <Route path={"/users/orders"} element={<ProtectedRoute><OrdersPage/></ProtectedRoute>} />
       </Routes>
     </BrowserRouter>
   );
