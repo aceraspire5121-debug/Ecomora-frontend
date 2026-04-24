@@ -201,27 +201,69 @@ const StatCard = ({ title, value, change, accent, icon }) => (
 
 // ─── Order Row ────────────────────────────────────────────────────────────────
 const OrderRow = ({ name, orderId, date, status, amount }) => {
-    const STATUS_STYLE = {
-        Paid: { bg: "#F0FDF8", color: "#0a6057", dot: "#0f766e", border: "rgba(13,148,136,0.2)" },
-        Pending: { bg: "#FAEEDA", color: "#633806", dot: "#BA7517", border: "rgba(186,117,23,0.22)" },
-        Failed: { bg: "#FCEBEB", color: "#791F1F", dot: "#E24B4A", border: "rgba(226,75,74,0.18)" },
-    };
-    const s = STATUS_STYLE[status] || STATUS_STYLE.Pending;
-    const { bg, color } = getAvatarColor(name);
-    return (
-        <div className="adm-order-row">
-            <div className="adm-avatar" style={{ background: bg, color }}>{getInitials(name)}</div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ fontSize: 13, fontWeight: 600, color: T.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{name}</p>
-                <p style={{ fontSize: 11, color: T.faint, marginTop: 1 }}>{orderId} · {date}</p>
-            </div>
-            <span style={{ fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: 20, flexShrink: 0, background: s.bg, color: s.color, border: `1px solid ${s.border}`, display: "inline-flex", alignItems: "center", gap: 5 }}>
-                <span style={{ width: 5, height: 5, borderRadius: "50%", background: s.dot }} />
-                {status}
-            </span>
-            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 700, fontSize: "1.1rem", color: T.text, flexShrink: 0, paddingLeft: 4 }}>{amount}</p>
-        </div>
-    );
+  const STATUS_STYLE = {
+    Paid:    { bg: "#F0FDF8", color: "#0a6057", dot: "#0f766e", border: "rgba(13,148,136,0.2)" },
+    Pending: { bg: "#FAEEDA", color: "#633806", dot: "#BA7517", border: "rgba(186,117,23,0.22)" },
+    Failed:  { bg: "#FCEBEB", color: "#791F1F", dot: "#E24B4A", border: "rgba(226,75,74,0.18)" },
+  };
+  const s = STATUS_STYLE[status] || STATUS_STYLE.Pending;
+  const { bg, color } = getAvatarColor(name);
+
+  return (
+    <div className="adm-order-row">
+
+      {/* Avatar */}
+      <div className="adm-avatar" style={{ background: bg, color }}>
+        {getInitials(name)}
+      </div>
+
+      {/* Name + Order ID — takes all remaining space */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p style={{ fontSize: 13, fontWeight: 600, color: T.text,
+          overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          {name}
+        </p>
+        <p style={{ fontSize: 11, color: T.faint, marginTop: 1 }}>
+          {orderId} · {date}
+        </p>
+      </div>
+
+      {/* Status + Amount — fixed width so they always align */}
+      <div style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 12,
+        flexShrink: 0,
+        minWidth: 160,        /* ← yeh fix hai: status+amount ka combined min width */
+        justifyContent: "flex-end",
+      }}>
+
+        <span style={{
+          fontSize: 11, fontWeight: 600,
+          padding: "3px 10px", borderRadius: 20,
+          background: s.bg, color: s.color, border: `1px solid ${s.border}`,
+          display: "inline-flex", alignItems: "center", gap: 5,
+          whiteSpace: "nowrap",
+          minWidth: 72,               /* ← status badge fixed width */
+          justifyContent: "center",
+        }}>
+          <span style={{ width: 5, height: 5, borderRadius: "50%", background: s.dot, flexShrink: 0 }} />
+          {status}
+        </span>
+
+        <p style={{
+          fontFamily: "'Cormorant Garamond', serif",
+          fontWeight: 700, fontSize: "1.1rem", color: T.text,
+          minWidth: 72,               /* ← amount fixed width */
+          textAlign: "right",
+          whiteSpace: "nowrap",
+        }}>
+          {amount}
+        </p>
+
+      </div>
+    </div>
+  );
 };
 
 // ─── Stock Row ────────────────────────────────────────────────────────────────
@@ -248,6 +290,7 @@ const StockRow = ({ name, category, stock, maxStock = 20 }) => {
 // ─── Main Dashboard ───────────────────────────────────────────────────────────
 const AdminDashboard = () => {
     const [loading, setloading] = useState(false);
+    const [data, setdata] = useState({})
 
     const fetchdata = async () => {
         try {
@@ -266,8 +309,11 @@ const AdminDashboard = () => {
                 return;
             }
             console.log("success", result)
+            setdata(result)
         } catch (error) {
             console.log(error)
+        } finally{
+            setloading(true)
         }
     }
 
@@ -279,6 +325,28 @@ const AdminDashboard = () => {
         weekday: "short", day: "2-digit", month: "short", year: "numeric",
     });
 
+    const formatDate = (date) => {
+  return new Date(date).toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    timeZone: "Asia/Kolkata"
+  });
+};
+
+
+const formatStatus=(status)=>{
+    return status.charAt(0).toUpperCase()+status.slice(1);
+}
+
+const formatAmount=(amount)=>{
+    return `₹${amount.toLocaleString("en-IN")}`;
+}
+const formatOrderId = (id = "") => {
+  if (!id) return "#ORD-XXXX";
+
+  const short = id.slice(-6).toUpperCase(); // last 6 chars
+  return `#ORD-${short}`;
+};
     return (
         <div>
 
@@ -307,10 +375,10 @@ const AdminDashboard = () => {
 
                 {/* ─── Stats ─── */}
                 <div className="adm-stats-grid">
-                    <StatCard accent="teal" icon="👥" title="Total Users" value="1,284" change="+24 this week" />
-                    <StatCard accent="amber" icon="🛍️" title="Total Orders" value="3,741" change="+112 this week" />
+                    <StatCard accent="teal" icon="👥" title="Total Users" value={data.totalUsers} change="+24 this week" />
+                    <StatCard accent="amber" icon="🛍️" title="Total Orders" value={data.totalOrders} change="+112 this week" />
                     <StatCard accent="blue" icon="₹" title="Revenue" value="₹8.4L" change="+₹42k this week" />
-                    <StatCard accent="red" icon="⚠" title="Low Stock" value="7" change="needs restock" />
+                    <StatCard accent="red" icon="⚠" title="Low Stock" value={data.lowStockCount} change="needs restock" />
                 </div>
 
                 {/* ─── Main Grid ─── */}
@@ -320,22 +388,23 @@ const AdminDashboard = () => {
                             <span style={{ fontSize: 14, fontWeight: 600, color: T.text }}>Recent Orders</span>
                             <span style={{ fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: 20, background: "#F0FDF8", color: "#0a6057", border: "1px solid rgba(13,148,136,0.2)" }}>Live</span>
                         </div>
-                        <OrderRow name="Rahul Sharma" orderId="#ORD-2025-00391" date="22 Apr" status="Paid" amount="₹6,299" />
-                        <OrderRow name="Priya Verma" orderId="#ORD-2025-00390" date="22 Apr" status="Pending" amount="₹2,817" />
-                        <OrderRow name="Arjun Kumar" orderId="#ORD-2025-00389" date="21 Apr" status="Paid" amount="₹12,450" />
-                        <OrderRow name="Neha Mishra" orderId="#ORD-2025-00388" date="21 Apr" status="Failed" amount="₹4,299" />
+                        {loading && data.recentOrders.map(i=>
+                            <OrderRow key={i._id} name={i.user.name} orderId={formatOrderId(i.orderId)} date={formatDate(i.paidAt)} status={formatStatus(i.status)} amount={formatAmount(i.amount)}  />
+                        )}
                     </div>
 
                     <div className="adm-panel">
                         <div className="adm-panel-header">
                             <span style={{ fontSize: 14, fontWeight: 600, color: T.text }}>Low Stock</span>
-                            <span style={{ fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: 20, background: "#FCEBEB", color: "#A32D2D", border: "1px solid rgba(226,75,74,0.18)" }}>7 items</span>
+                            <span style={{ fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: 20, background: "#FCEBEB", color: "#A32D2D", border: "1px solid rgba(226,75,74,0.18)" }}>{data.lowStockCount}</span>
                         </div>
-                        <StockRow name="Smart Watch Series X" category="Electronics" stock={1} />
+                        {/* <StockRow name="Smart Watch Series X" category="Electronics" stock={1} />
                         <StockRow name="Minimalist Writer Set" category="Accessories" stock={2} />
                         <StockRow name="Urban Runner Pro" category="Footwear" stock={4} />
-                        <StockRow name="Amber Oud Parfum" category="Beauty" stock={5} />
-                        <StockRow name="Canvas Tote Essential" category="Bags" stock={6} />
+                        <StockRow name="Amber Oud Parfum" category="Beauty" stock={5} /> */}
+                        {loading && data.lowStock.map(i=>
+                            <StockRow key={i._id} name={i.name} category={i.category} stock={i.stock} />
+                        )}
                     </div>
                 </div>
 
@@ -343,31 +412,24 @@ const AdminDashboard = () => {
                 <div className="adm-panel">
                     <div className="adm-panel-header">
                         <span style={{ fontSize: 14, fontWeight: 600, color: T.text }}>Recent Users</span>
-                        <span style={{ fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: 20, background: "#E6F1FB", color: "#0C447C", border: "1px solid rgba(55,138,221,0.2)" }}>1,284 total</span>
+                        <span style={{ fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: 20, background: "#E6F1FB", color: "#0C447C", border: "1px solid rgba(55,138,221,0.2)" }}>{data.totalUsers}</span>
                     </div>
                     <div style={{ padding: 16 }}>
                         <div className="adm-users-grid">
-                            {[
-                                { name: "Rahul Sharma", email: "rahul.sharma@gmail.com", orders: 8, amount: "₹42,180" },
-                                { name: "Neha Mishra", email: "nehamis@gmail.com", orders: 5, amount: "₹18,940" },
-                                { name: "Priya Verma", email: "priya.v@outlook.com", orders: 3, amount: "₹9,251" },
-                                { name: "Sushant Yadav", email: "sushant.y@gmail.com", orders: 2, amount: "₹12,244" },
-                                { name: "Arjun Kumar", email: "arjunkumar99@yahoo.com", orders: 12, amount: "₹78,320" },
-                                { name: "Deepika Gupta", email: "deepika.g@hotmail.com", orders: 7, amount: "₹31,600" },
-                            ].map((user) => {
-                                const { bg, color } = getAvatarColor(user.name);
+                            {loading && data.recent.map((i) => {
+                                const { bg, color } = getAvatarColor(i.user.name);
                                 return (
-                                    <div key={user.name} className="adm-user-card">
+                                    <div key={i.user._id} className="adm-user-card">
                                         <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-                                            <div className="adm-avatar" style={{ background: bg, color }}>{getInitials(user.name)}</div>
+                                            <div className="adm-avatar" style={{ background: bg, color }}>{getInitials(i.user.name)}</div>
                                             <div style={{ minWidth: 0 }}>
-                                                <p style={{ fontSize: 13, fontWeight: 600, color: T.text }}>{user.name}</p>
-                                                <p style={{ fontSize: 11, color: T.faint, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user.email}</p>
+                                                <p style={{ fontSize: 13, fontWeight: 600, color: T.text }}>{i.user.name}</p>
+                                                <p style={{ fontSize: 11, color: T.faint, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{i.user.email}</p>
                                             </div>
                                         </div>
                                         <div style={{ textAlign: "right", flexShrink: 0 }}>
-                                            <p style={{ fontSize: 12, fontWeight: 600, color: "#185FA5" }}>{user.orders} orders</p>
-                                            <p style={{ fontFamily: "'Cormorant Garamond',serif", fontWeight: 700, fontSize: "1rem", color: T.text }}>{user.amount}</p>
+                                            <p style={{ fontSize: 12, fontWeight: 600, color: "#185FA5" }}>{i.count} orders</p>
+                                            <p style={{ fontFamily: "'Cormorant Garamond',serif", fontWeight: 700, fontSize: "1rem", color: T.text }}>{formatAmount(i.amount)}</p>
                                         </div>
                                     </div>
                                 );
