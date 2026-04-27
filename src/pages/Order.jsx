@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Snackbar, Alert } from "@mui/material";
+import Navbar from "../components/Navbar";
 
 // ─── Font injection ────────────────────────────────────────────────────────────
 if (!document.getElementById("orp-fonts")) {
@@ -364,7 +365,9 @@ const OrdersPage = () => {
 
   return (
     <div style={{ width: "min(1120px, 98%)", margin: "0 auto" }}>
+      <Navbar/>
       <div style={{
+        marginTop:20,
         background: "#fff", borderRadius: 20,
         border: `1px solid ${T.border}`, boxShadow: T.shadow, overflow: "hidden",
       }}>
