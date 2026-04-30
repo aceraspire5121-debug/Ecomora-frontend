@@ -22,9 +22,10 @@ const ProductCard = ({ product,onDelete,onFetch,onShowMessage,onShowMessage2 }) 
       const data=await res.json();
       if (res.ok) {
       console.log("Added to cart:", data);
-      onShowMessage2()
+      onShowMessage2("Added to Cart")
 
     } else {
+      onShowMessage2(data.message,"error")
       console.error(data.message);
     }
   }catch(err)

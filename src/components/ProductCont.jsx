@@ -12,6 +12,8 @@ const ProductHeader = () => {
   const [page, setpage] = useState(1)
   const [open, setopen] = useState(false)
   const [open2, setopen2] = useState(false)
+  const [message, setmessage] = useState("")
+  const [severity, setseverity] = useState("")
   const navigate = useNavigate()
   let totalpages;
 
@@ -41,11 +43,15 @@ const ProductHeader = () => {
   }
 
   const handleShowMessage=()=>{
+    setseverity("success")
+    setmessage("Product deleted successfully");
    setopen(true)
   }
 
-  const handleShowMessage2=()=>{
-    setopen2(true)
+  const handleShowMessage2=(msg,type="success")=>{
+    setseverity(type)
+    setmessage(msg)
+    setopen(true)
   }
 
   return (
@@ -172,25 +178,11 @@ const ProductHeader = () => {
         anchorOrigin={{ vertical: "top", horizontal: "right" }} // position lagayi hai uski
       >
         <Alert
-          severity="success"
+          severity={severity}
           variant="filled"
           onClose={() => setopen(false)}
         >
-          Product deleted successfully
-        </Alert>
-      </Snackbar>
-      <Snackbar
-        open={open2}
-        autoHideDuration={2000}
-        onClose={() => setopen2(false)} // jab ye band hoga to jate jate ye setopen ko false kar dega aur iski bajah se, snackbar jo ki open the open={true} par bo open=false hone par fir close ho jayega, to ek tareeke se ye apne aap ko ui se hi hide kar raha hai onclose par
-        anchorOrigin={{ vertical: "top", horizontal: "right" }} // position lagayi hai uski
-      >
-        <Alert
-          severity="success"
-          variant="filled"
-          onClose={() => setopen2(false)}
-        >
-          Added to Cart Successfully
+          {message}
         </Alert>
       </Snackbar>
     </div>
