@@ -507,6 +507,7 @@ const CustomerDrawer = ({ customer, onClose }) => {
 // ─── Main Component ────────────────────────────────────────────────────────────
 const CustomersPage = () => {
   const [customers, setcustomers] = useState([])
+  const [loading, setloading] = useState(true)
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("All");
   const [filterTier, setFilterTier] = useState("All");
@@ -515,12 +516,26 @@ const CustomersPage = () => {
   const PER_PAGE = 7;
 
 
-  const fetchProducts=async ()=>{
+  const fetchCustomers=async ()=>{
     try {
-        const res=await fetch(`${import.meta.env.VITE_API_URL}/api/customers/getAllCustomers`)
-        
+        const token=localStorage.getItem("CommerceToken")
+        const res=await fetch(`${import.meta.env.VITE_API_URL}/api/customers/getAllCustomers`,{
+            headers: {
+          Authorization: `Bearer ${token}`, // 🔥 important
+        },
+        })
+        const result=await res.json() // json string me convert hokar network par send hota hai isliye ham yaha .json me dubara convert karte hai jisse bo stringified json se usable json object me convert ho jaye
+        if(!res.ok)
+        {
+            console.log(result.message)
+        }
+        console.log("success",result)
+        setcustomers(result.totalcustomers)
+
     } catch (error) {
-        
+        console.log(error)
+    } finally{
+        setloading(false)
     }
   }
 
@@ -530,14 +545,14 @@ const CustomersPage = () => {
   
 
   // Computed stats
-  const totalSpend = customers.reduce((s, c) => s + c.spend, 0);
+  const totalSpend = customers.reduce((s, c) => s + c.totalSpent, 0);
   const activeCount = customers.filter(c => c.status === "Active").length;
   const newThisMonth = customers.filter(c => {
-    const j = new Date(c.joined);
+    const j = new Date(c.createdAt);
     const now = new Date();
-    return j.getMonth() === now.getMonth() && j.getFullYear() === now.getFullYear();
+    return j.getMonth() === now.getMonth() && j.getFullYear() === now.getFullYear(); // true hoga to include agar false hoga to exclude
   }).length;
-  const avgOrderValue = Math.round(totalSpend / customers.reduce((s, c) => s + c.orders, 0));
+  const avgOrderValue = Math.round(totalSpend / customers.reduce((s, c) => s + c.totalOrders, 0));
 
   // Filtered
   const filtered = customers.filter(c => {
@@ -569,7 +584,7 @@ const CustomersPage = () => {
         <div className="cust-stats-grid">
           <StatCard accent="teal"  icon="👥" title="Total Customers" value={customers.length}      sub={`${activeCount} active`} />
           <StatCard accent="amber" icon="✅" title="Active"          value={activeCount}           sub="currently active" />
-          <StatCard accent="blue"  icon="🆕" title="New This Month"  value={newThisMonth || 1}     sub="joined recently" />
+          <StatCard accent="blue"  icon="🆕" title="New This Month"  value={newThisMonth}     sub="joined recently" />
           <StatCard accent="rose"  icon="📊" title="Avg Order Value" value={fmtAmount(avgOrderValue)} sub="across all orders" />
         </div>
 
@@ -630,63 +645,47 @@ const CustomersPage = () => {
                 </tr>
               </thead>
               <tbody>
-                {paginated.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} style={{ textAlign: "center", padding: "40px 20px", color: T.faint, fontSize: 14 }}>
-                      No customers match your search
-                    </td>
-                  </tr>
-                ) : paginated.map((c) => {
-                  const { bg, color } = getAvatarColor(c.name);
-                  const tier = TIER_CONFIG[c.tier];
-                  const status = STATUS_CONFIG[c.status];
-                  return (
-                    <tr key={c._id} onClick={() => setSelected(c)}>
-                      {/* Customer */}
-                      <td>
-                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                          <div className="cust-avatar" style={{ background: bg, color }}>{getInitials(c.name)}</div>
-                          <div>
-                            <p style={{ fontSize: 13, fontWeight: 600, color: T.text }}>{c.name}</p>
-                            <p style={{ fontSize: 11, color: T.faint, marginTop: 1 }}>{c.email}</p>
-                          </div>
-                        </div>
-                      </td>
-
-                      {/* City */}
-                      <td style={{ fontSize: 13, color: T.sub }}>{c.city}</td>
-
-                      {/* Tier */}
-                      <td>
-                        <span className="cust-tier" style={{ background: tier.bg, color: tier.color }}>
-                          {tier.icon} {c.tier}
-                        </span>
-                      </td>
-
-                      {/* Orders */}
-                      <td style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 18, fontWeight: 700, color: T.text }}>
-                        {c.orders}
-                      </td>
-
-                      {/* Spend */}
-                      <td style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 18, fontWeight: 700, color: T.text }}>
-                        {fmtAmount(c.spend)}
-                      </td>
-
-                      {/* Last Active */}
-                      <td style={{ fontSize: 12, color: T.sub }}>{fmtDate(c.lastActive)}</td>
-
-                      {/* Status */}
-                      <td>
-                        <span className="cust-status" style={{ background: status.bg, color: status.color, border: `1px solid ${status.border}` }}>
-                          <span style={{ width: 5, height: 5, borderRadius: "50%", background: status.dot }} />
-                          {c.status}
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
+  {!loading && customers.map((c) => {
+    const { bg, color } = getAvatarColor(c.name || "");
+    const tier   = TIER_CONFIG[c.tier]   || { bg: "#F5EDE4", color: "#7A4520", icon: "🥉" }; // ye object se value access kar rahe hai by giving key TIER_CONFIG["Gold"], gold as a key paas kardi TIER_CONFIG OBJECT ME, key kyoki dynamic hai to hame ye notation use karna padega dot notation ki jagah
+    const status = STATUS_CONFIG[c.status] || STATUS_CONFIG.Inactive;
+    return (
+      <tr key={c._id} onClick={() => setSelected(c)}>
+        <td>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div className="cust-avatar" style={{ background: bg, color }}>{getInitials(c.name)}</div>
+            <div>
+              <p style={{ fontSize: 13, fontWeight: 600, color: T.text }}>{c.name}</p>
+              <p style={{ fontSize: 11, color: T.faint, marginTop: 1 }}>{c.email}</p>
+            </div>
+          </div>
+        </td>
+        <td style={{ fontSize: 13, color: T.sub }}>{c.city}</td>
+        <td>
+          {c.tier
+            ? <span className="cust-tier" style={{ background: tier.bg, color: tier.color }}>{tier.icon} {c.tier}</span>
+            : <span style={{ fontSize: 12, color: T.faint }}>—</span>
+          }
+        </td>
+        <td style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 18, fontWeight: 700, color: T.text }}>
+          {c.totalOrders ?? "—"}
+        </td>
+        <td style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 18, fontWeight: 700, color: T.text }}>
+          {c.totalSpent != null ? fmtAmount(c.totalSpent) : "—"}
+        </td>
+        <td style={{ fontSize: 12, color: T.sub }}>
+          {c.lastActivity ? fmtDate(c.lastActivity) : "—"}
+        </td>
+        <td>
+          <span className="cust-status" style={{ background: status.bg, color: status.color, border: `1px solid ${status.border}` }}>
+            <span style={{ width: 5, height: 5, borderRadius: "50%", background: status.dot }} />
+            {c.status || "—"}
+          </span>
+        </td>
+      </tr>
+    );
+  })}
+</tbody>
             </table>
           </div>
 
