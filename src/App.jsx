@@ -13,6 +13,7 @@ import NewPassword from "./pages/NewPassword";
 import OrderSuccess from "./pages/Receipt";
 import OrdersPage from "./pages/Order";
 import AdminDashboard from "./pages/Dashboard";
+import UsersPage from "./pages/UserPage";
 function App() {
   return (
     <BrowserRouter>
@@ -29,6 +30,7 @@ function App() {
         <Route path={"/users/receipt/:id"} element={<ProtectedRoute><OrderSuccess/></ProtectedRoute>} />
         <Route path={"/users/orders"} element={<ProtectedRoute><OrdersPage/></ProtectedRoute>} />
         <Route path={"/admin/dashboard"} element={<ProtectedRoute><AdminDashboard/></ProtectedRoute>} />
+        <Route path={"/admin/customers"} element={<ProtectedRoute><UsersPage/></ProtectedRoute>} />
       </Routes>
     </BrowserRouter>
   );

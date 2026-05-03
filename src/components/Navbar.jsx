@@ -72,7 +72,7 @@ const Navbar = () => {
               <Button sx={navBtn(location.pathname==="/admin/dashboard")} onClick={()=>navigate("/admin/dashboard")} > {/** agar arrow function me nhi likho to ye jab button render hoga usi time navigate chal jayea par ham chahte hai ki click karne ke baad chale isliye callback lagaya */}
                 Dashboard
               </Button>
-              <Button sx={navBtn(false)} disabled>
+              <Button sx={navBtn(location.pathname==="/admin/customers")} onClick={()=>navigate("/admin/customers")} >
                 Customers
               </Button>
               <Button sx={navBtn(false)} disabled>
