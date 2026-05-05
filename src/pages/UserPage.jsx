@@ -555,13 +555,12 @@ const CustomersPage = () => {
   const avgOrderValue = Math.round(totalSpend / customers.reduce((s, c) => s + c.totalOrders, 0));
 
   // Filtered
-  const filtered = customers.filter(c => {
-    const q = search.toLowerCase();
-    const matchSearch = !q || c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q) || c.city.toLowerCase().includes(q);
-    const matchStatus = filterStatus === "All" || c.status === filterStatus;
-    const matchTier = filterTier === "All" || c.tier === filterTier;
-    return matchSearch && matchStatus && matchTier;
-  });
+ const filtered=customers.filter(c=>
+ {
+    const filteredCustomers=filterStatus==="All"|| c.status==filterStatus
+    return filteredCustomers
+ }
+ )
 
   const totalPages = Math.ceil(filtered.length / PER_PAGE);
   const paginated = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
@@ -619,7 +618,7 @@ const CustomersPage = () => {
 
               {/* Tier filter */}
               <select
-                value={filterTier}
+                value={"Gold`"}
                 onChange={e => handleFilter("tier", e.target.value)}
                 style={{ padding: "7px 14px", borderRadius: 10, border: "1px solid rgba(60,40,20,0.1)", background: "#F5F3EF", fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: T.sub, cursor: "pointer", outline: "none" }}
               >
@@ -645,7 +644,7 @@ const CustomersPage = () => {
                 </tr>
               </thead>
               <tbody>
-  {!loading && customers.map((c) => {
+  {!loading && filtered.map((c) => {
     const { bg, color } = getAvatarColor(c.name || "");
     const tier   = TIER_CONFIG[c.tier]   || { bg: "#F5EDE4", color: "#7A4520", icon: "🥉" }; // ye object se value access kar rahe hai by giving key TIER_CONFIG["Gold"], gold as a key paas kardi TIER_CONFIG OBJECT ME, key kyoki dynamic hai to hame ye notation use karna padega dot notation ki jagah
     const status = STATUS_CONFIG[c.status] || STATUS_CONFIG.Inactive;
