@@ -541,7 +541,7 @@ const CustomersPage = () => {
             const totalamount = result.avgOrder[0].totalamount
             const totalOrder = result.avgOrder[0].totalOrder
 
-            const avg = totalOrder > 0 ? Math.ceil(totalamount / totalOrder): 0
+            // const avg = totalOrder > 0 ? Math.ceil(totalamount / totalOrder): 0
 
             setavgOrder(avg)
 
