@@ -207,7 +207,7 @@ if (!document.getElementById("cust-styles")) {
       box-shadow: -12px 0 60px rgba(28,20,16,0.14);
       z-index: 10000;
       overflow-y: auto;
-      transform: translateX(100%);
+      transform: translateX(100%); // ye drawer ko screen ke bahar bhej raha hai
       transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
     }
       @media (max-width: 640px) {
@@ -215,7 +215,9 @@ if (!document.getElementById("cust-styles")) {
     max-width: 100%;
   }
 }
-    .cust-drawer.open { transform: translateX(0); }
+
+    .cust-drawer.open { transform: translateX(0); }  /*  jaise hi open class add ho rahi hai open true hone ki bajah se, to ham us element par jispr cust-drawer class bhi hai aur open class bhi hai uspr ye property apply kar rahe hai, to pahle upar bali property lagti hai par jaise hi open class bhi add ho jati hai to ye .cust-drawer.open upar bale .cust-drawer ki properties ko overwrite kar deti hai aur ye apply ho jati hai*/
+
 
     .cust-drawer-header {
       padding: 22px 24px 18px;
@@ -384,7 +386,7 @@ const CustomerDrawer = ({ customer, onClose }) => {
 
     return (
         <>
-            <div className={`cust-overlay ${open ? "open" : ""}`} onClick={onClose} />
+            <div className={`cust-overlay ${open ? "open" : ""}`} onClick={onClose} /> {/** screen par kahi bhi click karo onclose ko trigger kardo jo ki selected ko null kar dega, jisse customer prop null ho jayega and usse open false ho jayega jisse hamari .open class hat jayegi aur kebal .cust-drawer class apply hogi jisse translateX(100%) ho jayega jisse drawer screen ke bahar chala jayega */}
             <div className={`cust-drawer ${open ? "open" : ""}`}>
                 {open && (
                     <>
@@ -417,10 +419,10 @@ const CustomerDrawer = ({ customer, onClose }) => {
                         <div className="cust-drawer-section">
                             <p style={{ fontSize: 10, color: T.faint, letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 600, marginBottom: 12 }}>Contact & Info</p>
                             {[
-                                ["📱", "Phone", customer.phone],
+                                ["📱", "Phone", customer.phoneNumber],
                                 ["📍", "City", customer.city],
-                                ["📅", "Joined", fmtDate(customer.joined)],
-                                ["🕐", "Last Active", fmtDate(customer.lastActive)],
+                                ["📅", "Joined", fmtDate(customer.createdAt)],
+                                ["🕐", "Last Active", fmtDate(customer.lastActivity)],
                             ].map(([icon, label, val]) => (
                                 <div key={label} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
                                     <span style={{ fontSize: 14, width: 20, textAlign: "center" }}>{icon}</span>
@@ -435,9 +437,9 @@ const CustomerDrawer = ({ customer, onClose }) => {
                             <p style={{ fontSize: 10, color: T.faint, letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 600, marginBottom: 12 }}>Spend Summary</p>
                             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                                 {[
-                                    ["Total Spend", fmtAmount(customer.spend)],
-                                    ["Total Orders", customer.orders],
-                                    ["Avg Order", fmtAmount(Math.round(customer.spend / customer.orders))],
+                                    ["Total Spend", fmtAmount(customer.totalSpent)],
+                                    ["Total Orders", customer.totalOrders],
+                                    ["Avg Order", fmtAmount(customer.avgOrder)],
                                     ["Tier", customer.tier],
                                 ].map(([label, val]) => (
                                     <div key={label} style={{ background: T.parchment, borderRadius: 10, padding: "12px 14px" }}>
@@ -681,7 +683,7 @@ useEffect(() => {
                                     const tier = TIER_CONFIG[c.tier] || { bg: "#F5EDE4", color: "#7A4520", icon: "🥉" }; // ye object se value access kar rahe hai by giving key TIER_CONFIG["Gold"], gold as a key paas kardi TIER_CONFIG OBJECT ME, key kyoki dynamic hai to hame ye notation use karna padega dot notation ki jagah
                                     const status = STATUS_CONFIG[c.status] || STATUS_CONFIG.Inactive;
                                     return (
-                                        <tr key={c._id} onClick={() => setSelected(c)}>
+                                        <tr key={c._id} onClick={() => setSelected(c)}>  {/** ispr click karne se selected ke andar customer dal de rahe hai */}
                                             <td>
                                                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                                                     <div className="cust-avatar" style={{ background: bg, color }}>{getInitials(c.name)}</div>
@@ -739,7 +741,7 @@ useEffect(() => {
             </div>
 
             {/* Customer Detail Drawer */}
-            <CustomerDrawer customer={selected} onClose={() => setSelected(null)} />
+            <CustomerDrawer customer={selected} onClose={() => setSelected(null)} /> {/** ye hamesha mounted hai aur isme 2 props pass ho rahe hai */}
         </div>
     );
 };
