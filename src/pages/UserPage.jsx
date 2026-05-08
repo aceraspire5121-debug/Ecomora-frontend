@@ -184,10 +184,10 @@ if (!document.getElementById("cust-styles")) {
     /* ── Drawer overlay ── */
     .cust-overlay {
       position: fixed;
-      inset: 0;
+      inset: 0; // iski bajah se blurr poori screen par aa raha hai
       background: rgba(28,20,16,0.35);
       backdrop-filter: blur(2px);
-      z-index: 100;
+      z-index: 10000;
       opacity: 0;
       transition: opacity 0.25s;
       pointer-events: none;
@@ -202,7 +202,7 @@ if (!document.getElementById("cust-styles")) {
       background: #FEFCF9;
       border-left: 1px solid rgba(60,40,20,0.1);
       box-shadow: -12px 0 60px rgba(28,20,16,0.14);
-      z-index: 101;
+      z-index: 10000;
       overflow-y: auto;
       transform: translateX(100%);
       transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
