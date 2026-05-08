@@ -196,9 +196,12 @@ if (!document.getElementById("cust-styles")) {
 
     /* ── Drawer ── */
     .cust-drawer {
-      position: fixed;
-      top: 0; right: 0; bottom: 0;
-      width: min(420px, 100vw);
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+       width: 100%;
+  max-width: 420px; 
       background: #FEFCF9;
       border-left: 1px solid rgba(60,40,20,0.1);
       box-shadow: -12px 0 60px rgba(28,20,16,0.14);
@@ -207,6 +210,11 @@ if (!document.getElementById("cust-styles")) {
       transform: translateX(100%);
       transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
     }
+      @media (max-width: 640px) {
+  .cust-drawer {
+    max-width: 100%;
+  }
+}
     .cust-drawer.open { transform: translateX(0); }
 
     .cust-drawer-header {
@@ -519,6 +527,21 @@ const CustomersPage = () => {
     const [page, setPage] = useState(1);
     const PER_PAGE = 5;
 
+
+
+useEffect(() => {
+
+    if (selected) {
+        document.body.style.overflow = "hidden";
+    } else {
+        document.body.style.overflow = "auto";
+    }
+
+    return () => {
+        document.body.style.overflow = "auto"; // effect jo changes karta hai return un changes ko reset karta hai
+    };
+
+}, [selected]);
 
     const fetchCustomers = async () => {
         try {
