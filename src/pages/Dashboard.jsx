@@ -375,9 +375,9 @@ const formatOrderId = (id = "") => {
 
                 {/* ─── Stats ─── */}
                 <div className="adm-stats-grid">
-                    <StatCard accent="teal" icon="👥" title="Total Users" value={data.totalUsers} change="+24 this week" />
-                    <StatCard accent="amber" icon="🛍️" title="Total Orders" value={data.totalOrders} change="+112 this week" />
-                    <StatCard accent="blue" icon="₹" title="Revenue" value="₹8.4L" change="+₹42k this week" />
+                    <StatCard accent="teal" icon="👥" title="Total Users" value={data.totalUsers} change={`+${data.usersthisweek} this week`} />
+                    <StatCard accent="amber" icon="🛍️" title="Total Orders" value={data.totalOrders} change={`+${data.ordersthisweek} this week`} />
+                    <StatCard accent="blue" icon="₹" title="Revenue" value={data.totalrevenue} change={`+₹${data.weeklyrevenue} this week`} />
                     <StatCard accent="red" icon="⚠" title="Low Stock" value={data.lowStockCount} change="needs restock" />
                 </div>
 
