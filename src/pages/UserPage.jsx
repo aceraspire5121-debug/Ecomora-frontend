@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
+import { useNavigate } from "react-router-dom";
 
 // ─── Font + Style Injection ────────────────────────────────────────────────────
 if (!document.getElementById("cust-fonts")) {
@@ -372,6 +373,7 @@ const StatCard = ({ icon, title, value, sub, accent }) => (
 // ─── Customer Drawer ───────────────────────────────────────────────────────────
 const CustomerDrawer = ({ customer, onClose }) => {
     const open = Boolean(customer);
+    const navigate = useNavigate();
 
     const avatarStyle = customer ? getAvatarColor(customer.name || "") : {};
     const tier = customer ? (TIER_CONFIG[customer.tier] || TIER_CONFIG.Bronze) : {};
@@ -442,7 +444,7 @@ const CustomerDrawer = ({ customer, onClose }) => {
                                     ["Avg Order", fmtAmount(customer.avgOrder)],
                                     ["Tier", customer.tier],
                                 ].map(([label, val]) => (
-                                    <div key={label} style={{ background: T.parchment, borderRadius: 10, padding: "12px 14px" }}>
+                                    <div key={label} onClick={label=="Total Orders"?()=>navigate(`/admin/${customer._id}/orders`):undefined} style={{ background: T.parchment, borderRadius: 10, padding: "12px 14px" }}> 
                                         <p style={{ fontSize: 10, color: T.faint, letterSpacing: "0.06em", textTransform: "uppercase", fontWeight: 600, marginBottom: 4 }}>{label}</p>
                                         <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 20, fontWeight: 700, color: T.text, lineHeight: 1 }}>{val}</p>
                                     </div>

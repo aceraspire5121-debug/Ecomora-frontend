@@ -29,6 +29,7 @@ function App() {
         <Route path={"/users/cart"} element={<ProtectedRoute><Cart/></ProtectedRoute>} />
         <Route path={"/users/receipt/:id"} element={<ProtectedRoute><OrderSuccess/></ProtectedRoute>} />
         <Route path={"/users/orders"} element={<ProtectedRoute><OrdersPage/></ProtectedRoute>} />
+        <Route path={"/admin/:userid/orders"} element={<ProtectedRoute><OrdersPage/></ProtectedRoute>} />
         <Route path={"/admin/dashboard"} element={<ProtectedRoute><AdminDashboard/></ProtectedRoute>} />
         <Route path={"/admin/customers"} element={<ProtectedRoute><UsersPage/></ProtectedRoute>} />
       </Routes>

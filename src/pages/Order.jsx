@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Snackbar, Alert } from "@mui/material";
 import Navbar from "../components/Navbar";
+import { useParams } from "react-router-dom";
 
 // ─── Font injection ────────────────────────────────────────────────────────────
 if (!document.getElementById("orp-fonts")) {
@@ -333,9 +334,39 @@ const OrdersPage = () => {
   const [filter, setFilter]   = useState("all");
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState(false);
+  const [customer, setcustomer] = useState({})
   const navigate = useNavigate();
+  const {userid}=useParams();
+const isAdminView=!!userid;
+
+useEffect(() => {
+  if(!userid) return;
+const getSingleUser= async ()=>{
+   try {
+    const res=await fetch(`${import.meta.env.VITE_API_URL}/api/customers/${userid}`)
+    const result=await res.json()
+    if(!res?.ok)
+    {
+      console.log(result.message)
+      return;
+    }
+    setcustomer(result.user)
+    setOrders(result.user.userorders)
+   } catch (error) {
+    console.log(error)
+   }finally{
+    setLoading(false)
+   }
+ }
+ getSingleUser()
+  
+}, [userid])
+
+
+
 
   useEffect(() => {
+    if(userid) return;
     (async () => {
       try {
         const token = localStorage.getItem("CommerceToken");
@@ -381,20 +412,22 @@ const OrdersPage = () => {
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
             <div>
               <p style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 10.5, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: T.teal, marginBottom: 6 }}>
-                Your account
+                {isAdminView ? `${customer?.name|| "Customer"} Account` : "Your Account"}
               </p>
               <h1 style={{ fontFamily: "'Cormorant Garamond',serif", fontWeight: 700, fontSize: "1.9rem", letterSpacing: "-0.02em", color: T.ink, lineHeight: 1, marginBottom: 5 }}>
-                My Orders
+                 {isAdminView ? "Customer Orders" : "My Orders"}
               </h1>
               <p style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 13, color: T.inkFaint }}>
-                Track and review your past purchases.
+                  {isAdminView
+    ? "View and review this customer's order history."
+    : "Track and review your past purchases."}
               </p>
             </div>
 
             {/* Back to products button */}
             <button
               className="orp-back"
-              onClick={() => navigate("/user/products")}
+              onClick={isAdminView?()=>navigate(-1):() => navigate("/user/products")}
               style={{
                 display: "inline-flex", alignItems: "center", gap: 7,
                 padding: "0 18px", height: 38, borderRadius: 10,
@@ -409,7 +442,7 @@ const OrdersPage = () => {
                 stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M19 12H5M12 5l-7 7 7 7" />
               </svg>
-              Browse products
+              {isAdminView ? "Back to Customers" : "Browse Products"}
             </button>
           </div>
 
