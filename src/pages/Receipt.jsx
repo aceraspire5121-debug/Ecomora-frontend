@@ -22,6 +22,7 @@ const OrderSuccess = () => {
   const navigate = useNavigate();
   const [order, setorder] = useState({})
   const [loading, setloading] = useState(true)
+  const [isAdmin, setisAdmin] = useState(false)
 
   const fetchdata=async()=>{
     try {
@@ -45,6 +46,7 @@ const OrderSuccess = () => {
       }
       console.log("success",result)
      setorder(result.order)
+     setisAdmin(result.isAdmin)
     } catch (error) {
       console.log(error)
     }
@@ -215,7 +217,7 @@ const OrderSuccess = () => {
         {/* ── Actions ── */}
         <div style={{ padding: "20px 32px 28px", display: "flex", gap: 10 }}>
           <button
-            onClick={() => navigate("/user/products")}
+            onClick={isAdmin?()=>navigate(-1):() => navigate("/user/products")}
             style={{
               flex: 1, height: 42, borderRadius: 10,
               background: "transparent", border: `1px solid ${T.borderMid}`,
@@ -225,9 +227,9 @@ const OrderSuccess = () => {
             onMouseEnter={e => { e.target.style.borderColor = T.tealBorder; e.target.style.background = T.tealLight; e.target.style.color = T.teal; }}
             onMouseLeave={e => { e.target.style.borderColor = T.borderMid; e.target.style.background = "transparent"; e.target.style.color = T.inkLight; }}
           >
-            Browse products
+            {isAdmin ? "Back to Orders" : "Browse Products"}
           </button>
-          <button
+         { !isAdmin && <button
             onClick={() => navigate("/users/orders")}
             style={{
               flex: 1, height: 42, borderRadius: 10,
@@ -239,7 +241,7 @@ const OrderSuccess = () => {
             onMouseLeave={e => { e.target.style.background = T.ink; e.target.style.boxShadow = "none"; }}
           >
             View all orders →
-          </button>
+          </button>}
         </div>
       </div>
     </div>
