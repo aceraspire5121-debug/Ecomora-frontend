@@ -358,6 +358,7 @@ const CartCont = () => {
             <Button
               fullWidth
               variant="text"
+              onClick={()=>navigate("/user/products")} // callback isliye jisse component render hote hi na chalge click karne ke baad chale
               sx={{ mt: 1, fontWeight: 700, color: "text.secondary" }}
             >
               Continue Shopping
