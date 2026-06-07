@@ -1,154 +1,355 @@
-import React from "react";
+import React, { useState } from "react";
 import { getUserFromToken } from "../utils/auth";
-import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
-import { Snackbar, Alert,IconButton } from "@mui/material";
-import { useState } from "react";
+import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
+import { IconButton } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
-const ProductCard = ({ product,onDelete,onFetch,onShowMessage,onShowMessage2 }) => {
+const ProductCard = ({ product, onDelete, onFetch, onShowMessage, onShowMessage2 }) => {
   const user = getUserFromToken();
   const isAdmin = user?.role === "admin";
-  const [open, setopen] = useState(false)
-  const [loading, setloading] = useState(false)
-  const navigate=useNavigate()
+  const [loading, setloading] = useState(false);
+  const navigate = useNavigate();
 
-  const addToCart=async ()=>{
-    try{
-    const token=localStorage.getItem("CommerceToken");
-      const res=await fetch(`${import.meta.env.VITE_API_URL}/api/cart/${product._id}`,{
-        method:"POST",
-        headers:{Authorization: `Bearer ${token}`},
-      })
-      const data=await res.json();
-      if (res.ok) {
-      console.log("Added to cart:", data);
-      onShowMessage2("Added to Cart")
-
-    } else {
-      onShowMessage2(data.message,"error")
-      console.error(data.message);
-    }
-  }catch(err)
-  {
-    console.error("Error:", err);
-  }
-  }
-
-  const deleteProduct = async () => { // ohh har function ke liye ek alag execution context banta hai jiska ek part memory space hota hai aur uski memory space me bo uske andar jo data use hota hai use store karta hai jiski bajah se jitni bar deleteProduct banega bo har bar us time avaibale product ko store kar lega jo ki bo use kar raha hai, isliye har deleteProduct ka ek alag execution context hai jiski memory me us particular card ke assosiated product store hai
+  const addToCart = async () => {
     try {
-      setloading(true)
-      const token = localStorage.getItem("CommerceToken")
-      const id = product._id
+      const token = localStorage.getItem("CommerceToken");
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/cart/${product._id}`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (res.ok) {
+        onShowMessage2("Added to Cart");
+      } else {
+        onShowMessage2(data.message, "error");
+        console.error(data.message);
+      }
+    } catch (err) {
+      console.error("Error:", err);
+    }
+  };
+
+  const deleteProduct = async () => {
+    try {
+      setloading(true);
+      const token = localStorage.getItem("CommerceToken");
+      const id = product._id;
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/${id}`, {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        }
-      })
+        headers: { Authorization: `Bearer ${token}` },
+      });
       if (res.ok) {
-        setopen(true)
-        onDelete(product._id)
-        onShowMessage()
-        onFetch()
-        
+        onDelete(product._id);
+        onShowMessage();
+        onFetch();
       }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setloading(false);
+    }
+  };
 
-    } catch(error) {
-       console.log(error)
-     }
-     finally{
-      setloading(false)
-     }
-  }
+  const inStock = product.stock > 0;
 
   return (
-    <article className="group relative flex flex-col rounded-2xl border border-stone-100 bg-white p-4 shadow-sm ring-1 ring-black/[0.02] transition duration-300 hover:-translate-y-0.5 hover:border-teal-200/60 hover:shadow-[0_20px_40px_-28px_rgba(15,118,110,0.35)]">
-      <div className="relative mb-3 aspect-[4/3] overflow-hidden rounded-xl bg-gradient-to-br from-stone-100 to-stone-50">
-        <img
-          src={product.images[0]?.url}
-          alt={product.name}
-          className="h-full w-full object-contain transition duration-500 group-hover:scale-[1.03]"
-        />
-      </div>
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Lora:wght@500;600;700&display=swap');
 
-      <span className="text-[11px] font-semibold uppercase tracking-wider text-teal-700/90">
-        {product.category}
-      </span>
+        .pc-root {
+          position: relative;
+          display: flex;
+          flex-direction: column;
+          border-radius: 20px;
+          background: #ffffff;
+          border: 1px solid rgba(226, 232, 240, 0.9);
+          box-shadow: 0 2px 12px -4px rgba(15, 23, 42, 0.07), 0 1px 2px rgba(15,23,42,0.04);
+          overflow: hidden;
+          transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
+                      box-shadow 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+                      border-color 0.2s ease;
+        }
+        .pc-root:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 20px 48px -16px rgba(13, 148, 136, 0.28), 0 4px 12px -4px rgba(15,23,42,0.08);
+          border-color: rgba(13, 148, 136, 0.3);
+        }
 
-      <h2 className="mt-1 line-clamp-2 text-sm font-bold leading-snug text-stone-900">{product.name}</h2>
+        /* image zone */
+        .pc-img-wrap {
+          position: relative;
+          overflow: hidden;
+          background: linear-gradient(145deg, #f8fafa, #f0fdfa);
+          height: 185px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .pc-img-wrap::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(to bottom, transparent 60%, rgba(255,255,255,0.18));
+          pointer-events: none;
+        }
+        .pc-img {
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+          padding: 14px;
+          transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .pc-root:hover .pc-img {
+          transform: scale(1.05);
+        }
 
-      <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-stone-500">{product.description}</p>
+        /* category pill */
+        .pc-cat {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          font-family: 'Outfit', sans-serif;
+          font-size: 10.5px;
+          font-weight: 600;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          color: #0d9488;
+          margin-bottom: 5px;
+        }
+        .pc-cat-dot {
+          width: 5px; height: 5px;
+          border-radius: 50%;
+          background: #14b8a6;
+          flex-shrink: 0;
+        }
 
-      <p className="mt-3 text-lg font-bold tabular-nums text-stone-900">₹{product.price}</p>
+        /* name */
+        .pc-name {
+          font-family: 'Lora', serif;
+          font-weight: 600;
+          font-size: 0.97rem;
+          line-height: 1.3;
+          color: #0f172a;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+          margin-bottom: 5px;
+        }
 
-      <div className="mt-3">
-        <span
-          className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold ${product.stock > 0
-              ? "bg-emerald-50 text-emerald-800 ring-1 ring-emerald-200/80"
-              : "bg-red-50 text-red-700 ring-1 ring-red-200/80"
-            }`}
-        >
-          {product.stock > 0 ? `In Stock (${product.stock})` : "Out of Stock"}
-        </span>
-      </div>
+        /* desc */
+        .pc-desc {
+          font-family: 'Outfit', sans-serif;
+          font-size: 0.76rem;
+          color: #94a3b8;
+          line-height: 1.55;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+          margin-bottom: 12px;
+          flex: 1;
+        }
 
-      {!isAdmin && ( // i have given group to the parent i.e article so by this now i can apply on child whenever parent is hovered, apply group-hover.. to the child
-       <IconButton
-    className="
-  opacity-100 
-  md:opacity-0 md:group-hover:opacity-100
-  translate-y-0 md:translate-y-2 md:group-hover:translate-y-0
-  scale-100 md:scale-95 md:group-hover:scale-100
-  pointer-events-auto md:pointer-events-none md:group-hover:pointer-events-auto
-  transition-all duration-300 ease-out
-"
-    size="small"
-    onClick={addToCart}
-    sx={{
-      position: "absolute",
-      bottom: 14,
-      right: 14,
-      width: 38,
-      height: 38,
-      color: "#0f766e",
-      backgroundColor: "#ffffff",
-      border: "1px solid rgba(13, 148, 136, 0.24)",
-      boxShadow: "0 10px 22px -12px rgba(15, 118, 110, 0.5)",
-      transition: "all 220ms ease",
-      "&:hover": {
-        backgroundColor: "#f0fdfa",
-        borderColor: "rgba(13, 148, 136, 0.5)",
-        boxShadow: "0 14px 26px -12px rgba(15, 118, 110, 0.6)",
-        transform: "translateY(-1px) scale(1.04)",
-      },
-    }}
-  >
-    <AddShoppingCartIcon sx={{ fontSize: 19 }} />
-  </IconButton>
-      )}
+        /* price */
+        .pc-price {
+          font-family: 'Lora', serif;
+          font-weight: 700;
+          font-size: 1.25rem;
+          color: #0f172a;
+          letter-spacing: -0.02em;
+          margin-bottom: 10px;
+        }
+        .pc-price span {
+          font-size: 0.8rem;
+          font-weight: 500;
+          color: #64748b;
+          margin-right: 1px;
+          font-family: 'Outfit', sans-serif;
+        }
 
-      {isAdmin && (
-        <div className="mt-4 flex gap-2 border-t border-stone-100 pt-4">
-          <button
-            type="button"
-            className="flex-1 rounded-xl border border-stone-200 py-2 text-xs font-semibold text-stone-700 transition hover:border-teal-300 hover:bg-teal-50/50 hover:text-teal-900"
-            onClick={()=>navigate(`/admin/products/editProduct/${product._id}`,{
-              state:{product}
-            })}
-          >
-            Edit
-          </button>
-          <button
-            type="button"
-            className="flex-1 rounded-xl border border-red-200/80 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-600 hover:text-white"
-            onClick={deleteProduct}
-            disabled={loading}
-          >
-            {loading?"Deleting...":"Delete"}
-          </button>
+        /* stock badge */
+        .pc-stock {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          font-family: 'Outfit', sans-serif;
+          font-size: 11px;
+          font-weight: 600;
+          padding: 4px 10px;
+          border-radius: 20px;
+          width: fit-content;
+        }
+        .pc-stock.in {
+          background: #f0fdfa;
+          color: #0f766e;
+          border: 1px solid rgba(13,148,136,0.2);
+        }
+        .pc-stock.out {
+          background: #fff1f2;
+          color: #be123c;
+          border: 1px solid rgba(190,18,60,0.18);
+        }
+        .pc-stock-dot {
+          width: 5px; height: 5px;
+          border-radius: 50%;
+          flex-shrink: 0;
+        }
+
+        /* cart button */
+        .pc-cart-btn {
+          position: absolute !important;
+          bottom: 14px;
+          right: 14px;
+          opacity: 0;
+          transform: translateY(6px) scale(0.92);
+          pointer-events: none;
+          transition: opacity 0.25s ease, transform 0.28s cubic-bezier(0.34,1.56,0.64,1) !important;
+        }
+        .pc-root:hover .pc-cart-btn {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+          pointer-events: auto;
+        }
+        @media (max-width: 768px) {
+          .pc-cart-btn {
+            opacity: 1 !important;
+            transform: none !important;
+            pointer-events: auto !important;
+          }
+        }
+
+        /* admin footer */
+        .pc-admin-footer {
+          display: flex;
+          gap: 8px;
+          padding: 10px 16px 14px;
+          border-top: 1px solid rgba(226, 232, 240, 0.8);
+          margin-top: auto;
+        }
+        .pc-btn-edit, .pc-btn-delete {
+          flex: 1;
+          border-radius: 10px;
+          font-family: 'Outfit', sans-serif;
+          font-size: 0.775rem;
+          font-weight: 600;
+          padding: 8px 0;
+          cursor: pointer;
+          transition: all 0.18s ease;
+          letter-spacing: 0.01em;
+        }
+        .pc-btn-edit {
+          border: 1px solid rgba(203,213,225,0.8);
+          background: transparent;
+          color: #475569;
+        }
+        .pc-btn-edit:hover {
+          background: #f0fdfa;
+          border-color: rgba(13,148,136,0.3);
+          color: #0d9488;
+        }
+        .pc-btn-delete {
+          border: 1px solid rgba(254,202,202,0.9);
+          background: transparent;
+          color: #dc2626;
+        }
+        .pc-btn-delete:hover:not(:disabled) {
+          background: #dc2626;
+          border-color: #dc2626;
+          color: #fff;
+          box-shadow: 0 4px 14px -4px rgba(220,38,38,0.4);
+        }
+        .pc-btn-delete:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+      `}</style>
+
+      <article className="pc-root">
+        {/* Image */}
+        <div className="pc-img-wrap">
+          <img
+            src={product.images[0]?.url}
+            alt={product.name}
+            className="pc-img"
+          />
         </div>
-      )}
-    </article>
+
+        {/* Body */}
+        <div style={{ padding: "14px 16px 16px", display: "flex", flexDirection: "column", flex: 1 }}>
+          <p className="pc-cat">
+            <span className="pc-cat-dot" />
+            {product.category}
+          </p>
+
+          <h2 className="pc-name">{product.name}</h2>
+          <p className="pc-desc">{product.description}</p>
+
+          <p className="pc-price">
+            <span>₹</span>{product.price.toLocaleString("en-IN")}
+          </p>
+
+          <span className={`pc-stock ${inStock ? "in" : "out"}`}>
+            <span
+              className="pc-stock-dot"
+              style={{ background: inStock ? "#0d9488" : "#dc2626" }}
+            />
+            {inStock ? `In Stock (${product.stock})` : "Out of Stock"}
+          </span>
+        </div>
+
+        {/* User: floating cart */}
+        {!isAdmin && (
+          <IconButton
+            className="pc-cart-btn"
+            size="small"
+            onClick={addToCart}
+            sx={{
+              width: 38,
+              height: 38,
+              borderRadius: "11px",
+              color: "#0f766e",
+              backgroundColor: "#ffffff",
+              border: "1px solid rgba(13,148,136,0.22)",
+              boxShadow: "0 8px 20px -8px rgba(15,118,110,0.45)",
+              "&:hover": {
+                backgroundColor: "#f0fdfa",
+                borderColor: "rgba(13,148,136,0.45)",
+                boxShadow: "0 12px 28px -10px rgba(15,118,110,0.55)",
+              },
+            }}
+          >
+            <AddShoppingCartIcon sx={{ fontSize: 17 }} />
+          </IconButton>
+        )}
+
+        {/* Admin: edit / delete */}
+        {isAdmin && (
+          <div className="pc-admin-footer">
+            <button
+              type="button"
+              className="pc-btn-edit"
+              onClick={() =>
+                navigate(`/admin/products/editProduct/${product._id}`, {
+                  state: { product },
+                })
+              }
+            >
+              Edit
+            </button>
+            <button
+              type="button"
+              className="pc-btn-delete"
+              onClick={deleteProduct}
+              disabled={loading}
+            >
+              {loading ? "Deleting…" : "Delete"}
+            </button>
+          </div>
+        )}
+      </article>
+    </>
   );
 };
 

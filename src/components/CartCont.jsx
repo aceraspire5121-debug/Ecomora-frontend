@@ -1,103 +1,68 @@
 import React from "react";
 import { useState, useEffect, useRef } from "react";
-import {
-  Box,
-  Button,
-  Paper,
-  Stack,
-  TextField,
-  Typography,
-  Divider,
-  IconButton,
-  Snackbar, Alert
-} from "@mui/material";
+import { Snackbar, Alert } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { useNavigate } from "react-router-dom";
 
 const CartCont = () => {
-  const [cartItems, setcartItems] = useState([]) // array of objects
-  const [open, setopen] = useState(false)
-  // const [open2, setopen2] = useState(false)
-  const [msg, setmsg] = useState("")
-  const [severity, setseverity] = useState("")
-  const requestId = useRef(0)
-  const oldcart = useRef([])
-  const navigate=useNavigate();
+  const [cartItems, setcartItems] = useState([]);
+  const [open, setopen] = useState(false);
+  const [msg, setmsg] = useState("");
+  const [severity, setseverity] = useState("");
+  const requestId = useRef(0);
+  const oldcart = useRef([]);
+  const navigate = useNavigate();
 
-  const showSnackbar=(message,type="success")=>{
-  setmsg(message);
-  setseverity(type)
-  setopen(true)
-  }
+  const showSnackbar = (message, type = "success") => {
+    setmsg(message);
+    setseverity(type);
+    setopen(true);
+  };
 
   const fetchCart = async () => {
-    const token = localStorage.getItem("CommerceToken")
+    const token = localStorage.getItem("CommerceToken");
     const res = await fetch(`${import.meta.env.VITE_API_URL}/api/cart/products`, {
       headers: { Authorization: `Bearer ${token}` },
-    })
+    });
     const data = await res.json();
-    console.log(data.cart.items)
-    setcartItems(data.cart.items) // data.cart.items array ka reference pass kar dia hamne cartItems ko, setcartitems me reference pass hota hai actual data nhi
-    oldcart.current = structuredClone(data.cart.items) // isme hame reference nhi chahiye hame chahiye deep copy kyoki ham ye backup ke liye rakh rahe hai aur backup me hame deep copy rakhna chahiye na ki reference since cartItems ke pass bhi reference hai agar usne kuch change kar dia array me to bo changes oldcart me bhi aa jayenge to fir ye backup kaise hua isliye ham deepcopy rakhenge iskki
-  }
+    setcartItems(data.cart.items);
+    oldcart.current = structuredClone(data.cart.items);
+  };
 
-  useEffect(() => {
-    fetchCart()
-  }, [])
-
-  // State:- persist value across re render and also trigger re render when changed
-  //useRef:- persist value across re renders but do not trigger re render when changed
-  //whenever user click, managequantity runs so for every click, a function call is created or in better way we can say that every click(function call) creates a instance of the same function which holds its own currentRequest value
-  // EX:- Click1 :-managequantity{ currentrequest=1 }
-  //      Click2 :-managequantity{ currentrequest=2 }
-  //      Click1 :-managequantity{ currentrequest=3 }
-
-  //whenever respond comes from backend if failed then move to its own instance of the function not to the latest instance i.e if click 2 generates a api calls but it fails due to server issue then the respond which came due to api call 2 will not go to the instance created because of click3, it will go back to the instance where currentRrequest==2
+  useEffect(() => { fetchCart(); }, []);
 
   const manageQuantity = async (item, manage) => {
-
-    //  const oldcart=[...cartItems]
-    const currentRequest = ++requestId.current // currentRequest belong to the instances of function
-
+    const currentRequest = ++requestId.current;
     setcartItems(prev =>
-      prev.map(i => i.product._id === item.product._id ? { ...i, quantity: manage ? i.quantity + 1 : i.quantity - 1 } : i
-
-        // ...i mtlb i ki properties copy karo yaha jaise product,quantity uske baad quantity:, iska mtlb hai sab copy karne ke baad quantity ko override kardo, kaise override karoge manage true to badakar,agar manage false to minus karke
-        //single expression:- {} ye nhi chahiye aur {}use nhi kia to return bhi nhi lagana padega:-implicit return
-        //multiple expression:- {} use karne padenge and sincle curly braces use kiye to return bhi lagana padega
-      ).filter(i => i.quantity > 0) // 0 se badi quantity hai to rakho barna hatado
-    )
+      prev.map(i =>
+        i.product._id === item.product._id
+          ? { ...i, quantity: manage ? i.quantity + 1 : i.quantity - 1 }
+          : i
+      ).filter(i => i.quantity > 0)
+    );
     try {
       const token = localStorage.getItem("CommerceToken");
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/cart/${item.product._id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ manage })
-      })
+        body: JSON.stringify({ manage }),
+      });
       const data = await res.json();
-      if (res.ok) {
-        console.log("Quantity Updated", data);
-      } else {
-        console.error(data.message);
-      }
-      // setcartItems(data.cart.items)
+      if (res.ok) console.log("Quantity Updated", data);
+      else console.error(data.message);
     } catch (err) {
-      if (currentRequest === requestId.current) // manlo request 2 fail hui to bo apne instance me aaya jaha par currentrequest=2 hoga, bo check karega ki kya currentRequest===requestId.current hai par manlo third click se requestId.current 3 ho gaya hai to yaha fail ho jayega aur koi  update nhi karega
-      {
-        showSnackbar("Failed to update","error");
-        try {
-          await fetchCart() // jaise 3 se 6 hua to har click par state update hui 3se 4 4 se 5 , 5 se 6 par backend me integrate nhi hua due to server issue to bahapar failed update likhkar aa gaya par value state ki bajah se update ho gyi, isliye is ui problem ko solve karne ke liye hamne fetch kar lia sedha backend se, par backend problem manlo kebal update bale me nhi whole servr issue hai to uske liye backup copy rakhi hai data ki oldcart bo dal dia to multiple scenarios ko handle kar raha hu
-        } catch (err) {
-          if (currentRequest === requestId.current)
-            setcartItems(oldcart.current)
-          console.log(err)
+      if (currentRequest === requestId.current) {
+        showSnackbar("Failed to update", "error");
+        try { await fetchCart(); }
+        catch (err) {
+          if (currentRequest === requestId.current) setcartItems(oldcart.current);
         }
       }
       console.error("Error:", err);
     }
-  }
+  };
 
   const deleteFromCart = async (item) => {
     try {
@@ -105,282 +70,504 @@ const CartCont = () => {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/cart/${item.product._id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
-      })
+      });
       const data = await res.json();
-      if (res.ok) {
-        console.log(data.message);
-        showSnackbar("Removed from cart","success")
-      } else {
-        console.error(data.message);
-      }
-      setcartItems(data.cart.items)
-      oldcart.current = structuredClone(data.cart.items)
-    } catch (err) {
-      console.error("Error:", err);
-    }
-  }
+      if (res.ok) showSnackbar("Removed from cart", "success");
+      else console.error(data.message);
+      setcartItems(data.cart.items);
+      oldcart.current = structuredClone(data.cart.items);
+    } catch (err) { console.error("Error:", err); }
+  };
 
   const paymentHandle = async () => {
     try {
-      // console.log(window.Razorpay)
-      const token = localStorage.getItem("CommerceToken")
+      const token = localStorage.getItem("CommerceToken");
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/payments/create`, {
         method: "POST",
         headers: { "content-type": "application/json", Authorization: `Bearer ${token}` },
-      })
-      const result = await res.json()
-      if (!res.ok)
-        alert(result.message)
-      console.log("success", result)
+      });
+      const result = await res.json();
+      if (!res.ok) alert(result.message);
 
       const options = {
-        key: "rzp_test_Seeukkl8eo0TXu", // apni key id
+        key: "rzp_test_Seeukkl8eo0TXu",
         amount: result.amount,
         currency: result.currency,
         name: "Ecomora",
         description: "Test Transaction",
         order_id: result.order_id,
-        method: {
-          upi: false,
-          card: true,
-          netbanking: true,
-          wallet: true,
-        },
-
-        handler: async function (response) {  // callback function jo ki payment success hone ke baad chalta hai aur jo bhi razorpay bhejta hai bo recieve karta hai
-          // console.log(response)
+        method: { upi: false, card: true, netbanking: true, wallet: true },
+        handler: async function (response) {
           try {
-            const token = localStorage.getItem("CommerceToken")
-            if (!token) {
-              alert("Please login again");
-              return;
-            }
+            const token = localStorage.getItem("CommerceToken");
+            if (!token) { alert("Please login again"); return; }
             const res = await fetch(`${import.meta.env.VITE_API_URL}/api/payments/verify-payment`, {
               method: "POST",
-              headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, // token dubara isliye bheja ki agar manlo koi banda postman ke through post request mar de jisme bo razorpay id signature baghera bhej de aur backend me koi bug ho gaya ho, to unauhtorised banda jo ki tumhari website par hai hi nhi bo bhi order place kar dega
-              body: JSON.stringify(response) // different values agar combine karni hoti hai tab object banate hai aur usme dal dete hai par yaha par to response already ek object hai to bo aise hi chala jayega
-            })
+              headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+              body: JSON.stringify(response),
+            });
             const result = await res.json();
-            if (!res.ok) {
-              console.log("payment failed", result)
-              showSnackbar("Unable to place order. Please try again","error")
-              return;
-            }
-            console.log("payment successful", result)
-            showSnackbar("Order placed successfully","success")
-            await fetchCart()
-            setTimeout(() => {
-              navigate(`/users/receipt/${result.order._id}`)
-            }, 2000);
-          } catch (error) {
-            console.log(error)
-            alert("Something went wrong")
-          }
-        }
+            if (!res.ok) { showSnackbar("Unable to place order. Please try again", "error"); return; }
+            showSnackbar("Order placed successfully", "success");
+            await fetchCart();
+            setTimeout(() => navigate(`/users/receipt/${result.order._id}`), 2000);
+          } catch (error) { alert("Something went wrong"); }
+        },
       };
-
       const rzp = new window.Razorpay(options);
       rzp.open();
+    } catch (err) { console.log(err); }
+  };
 
-    } catch (err) {
-      console.log(err)
-    }
-  }
+  const subtotal = cartItems.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
+  const shipping = cartItems.length > 0 ? 120 : 0;
+  const total = subtotal + shipping;
 
   return (
-    <Box
-      sx={{
-        minHeight: "100%",
-        py: 4,
-        px: 2,
-        background:
-          "linear-gradient(180deg, rgba(240,253,250,0.6) 0%, rgba(248,250,252,1) 45%)",
-      }}
-    >
-      <Box sx={{ width: "min(1100px, 100%)", mx: "auto" }}>
-        <Typography
-          variant="h4"
-          sx={{ fontWeight: 800, letterSpacing: "-0.02em", mb: 0.5 }}
-        >
-          My Cart
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-          Review your selected items and place your order.
-        </Typography>
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Lora:wght@600;700&display=swap');
 
-        <Stack direction={{ xs: "column", lg: "row" }} spacing={3} alignItems="stretch">
+        .cc-wrap {
+          min-height: 100%;
+          padding: 32px 16px 48px;
+          background: linear-gradient(160deg, rgba(240,253,250,0.5) 0%, #f8fafc 50%);
+        }
 
-          {/* Left: cart items */}
-          <Stack spacing={2.5} sx={{ flex: 1.7 }}>
-            {cartItems.map((item) => (
-              <Paper
-                key={item.product._id}
-                elevation={0}
-                sx={{
-                  p: 2,
-                  borderRadius: 3,
-                  border: "1px solid",
-                  borderColor: "rgba(15,118,110,0.14)",
-                  boxShadow: "0 12px 30px -22px rgba(15,23,42,0.25)",
-                }}
-              >
-                <Stack direction="row" spacing={2}>
-                  <Box
-                    component="img"
-                    src={item.product.images?.[0]?.url || "https://via.placeholder.com/150"}
-                    alt={item.product.name}
-                    sx={{
-                      width: 96,
-                      height: 96,
-                      borderRadius: 2.5,
-                      objectFit: "contain",
-                      border: "1px solid #e2e8f0",
-                    }}
-                  />
+        .cc-inner { width: min(1100px, 100%); margin: 0 auto; }
 
-                  <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
-                      {item.product.name}
-                    </Typography>
+        .cc-page-title {
+          font-family: 'Lora', serif;
+          font-weight: 700;
+          font-size: 1.9rem;
+          color: #0f172a;
+          letter-spacing: -0.03em;
+          margin: 0 0 4px;
+        }
+        .cc-page-sub {
+          font-family: 'Outfit', sans-serif;
+          font-size: 0.825rem;
+          color: #94a3b8;
+          margin: 0 0 28px;
+        }
 
-                    <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25 }}>
-                      {item.product.category}
-                    </Typography>
+        .cc-layout {
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
+          align-items: flex-start;
+        }
+        @media (min-width: 1024px) {
+          .cc-layout { flex-direction: row; }
+          .cc-items-col { flex: 1.65; }
+          .cc-summary-col { flex: 1; position: sticky; top: 24px; }
+        }
+        .cc-items-col, .cc-summary-col { width: 100%; }
 
-                    <Stack
-                      direction="row"
-                      justifyContent="space-between"
-                      alignItems="center"
-                      sx={{ mt: 2 }}
-                    >
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        <IconButton size="small" sx={{ border: "1px solid #e2e8f0", borderRadius: 1.5, bgcolor: "#fff" }}
-                          onClick={() => manageQuantity(item, false)} >
-                          <RemoveIcon fontSize="small" />
-                        </IconButton>
+        /* ── Item card ── */
+        .cc-item-card {
+          background: #ffffff;
+          border: 1px solid rgba(226,232,240,0.9);
+          border-radius: 18px;
+          padding: 16px;
+          margin-bottom: 12px;
+          box-shadow: 0 2px 12px -4px rgba(15,23,42,0.06);
+          transition: border-color 0.2s, box-shadow 0.2s, transform 0.25s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        .cc-item-card:hover {
+          border-color: rgba(13,148,136,0.25);
+          box-shadow: 0 10px 32px -12px rgba(13,148,136,0.2);
+          transform: translateY(-2px);
+        }
+        .cc-item-inner { display: flex; gap: 16px; }
 
-                        <Typography sx={{ fontWeight: 700, minWidth: 20, textAlign: "center" }}>
-                          {item.quantity}
-                        </Typography>
+        .cc-item-img {
+          width: 90px;
+          height: 90px;
+          border-radius: 13px;
+          object-fit: contain;
+          border: 1px solid rgba(226,232,240,0.8);
+          background: linear-gradient(145deg, #f8fafa, #f0fdfa);
+          padding: 6px;
+          flex-shrink: 0;
+        }
 
-                        <IconButton size="small" sx={{ border: "1px solid #e2e8f0", borderRadius: 1.5, bgcolor: "#fff" }}
-                          onClick={() => manageQuantity(item, true)} >
-                          <AddIcon fontSize="small" />
-                        </IconButton>
-                      </Stack>
+        .cc-item-body { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 
-                      <Stack direction="row" spacing={1.5} alignItems="center">
-                        <Typography sx={{ fontWeight: 800 }}>
-                          ₹{item.product.price}
-                        </Typography>
+        .cc-item-name {
+          font-family: 'Lora', serif;
+          font-weight: 600;
+          font-size: 0.95rem;
+          color: #0f172a;
+          line-height: 1.3;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          margin: 0 0 2px;
+        }
+        .cc-item-cat {
+          font-family: 'Outfit', sans-serif;
+          font-size: 0.72rem;
+          font-weight: 600;
+          color: #0d9488;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          margin: 0 0 12px;
+        }
 
-                        <IconButton size="small" sx={{ color: "#ef4444", bgcolor: "rgba(239,68,68,0.08)" }}
-                          onClick={() => deleteFromCart(item)} >
-                          <DeleteOutlineIcon fontSize="small" />
-                        </IconButton>
-                      </Stack>
-                    </Stack>
-                  </Box>
-                </Stack>
-              </Paper>
-            ))}
-          </Stack>
+        .cc-item-footer {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          flex-wrap: wrap;
+          gap: 10px;
+          margin-top: auto;
+        }
 
-          {/* Right: summary */}
-          <Paper
-            elevation={0}
-            sx={{
-              flex: 1,
-              p: 2.5,
-              borderRadius: 3,
-              border: "1px solid",
-              borderColor: "rgba(15,118,110,0.16)",
-              boxShadow: "0 16px 34px -24px rgba(15,23,42,0.25)",
-              height: "fit-content",
-              position: { lg: "sticky" },
-              top: 24,
-            }}
-          >
-            <Typography variant="h6" sx={{ fontWeight: 800, mb: 2 }}>
-              Order Summary
-            </Typography>
+        /* qty stepper */
+        .cc-qty-wrap {
+          display: inline-flex;
+          align-items: center;
+          gap: 2px;
+          background: #f8fafc;
+          border: 1px solid rgba(226,232,240,0.9);
+          border-radius: 12px;
+          padding: 3px;
+        }
+        .cc-qty-btn {
+          width: 30px; height: 30px;
+          border-radius: 9px;
+          border: none;
+          background: transparent;
+          color: #475569;
+          cursor: pointer;
+          display: flex; align-items: center; justify-content: center;
+          transition: background 0.15s, color 0.15s;
+          font-size: 16px;
+        }
+        .cc-qty-btn:hover { background: #fff; color: #0d9488; }
+        .cc-qty-val {
+          font-family: 'Outfit', sans-serif;
+          font-weight: 700;
+          font-size: 0.875rem;
+          color: #0f172a;
+          min-width: 28px;
+          text-align: center;
+        }
 
-            <Stack spacing={1.2}>
-              <Stack direction="row" justifyContent="space-between">
-                <Typography color="text.secondary">Subtotal</Typography>
-                <Typography sx={{ fontWeight: 700 }}>
-                  ₹{cartItems.reduce((acc, item) => acc + item.product.price * item.quantity, 0)}
-                </Typography>
-              </Stack>
+        .cc-item-right { display: flex; align-items: center; gap: 12px; }
+        .cc-item-price {
+          font-family: 'Lora', serif;
+          font-weight: 700;
+          font-size: 1.1rem;
+          color: #0f172a;
+          letter-spacing: -0.02em;
+        }
+        .cc-delete-btn {
+          width: 32px; height: 32px;
+          border-radius: 9px;
+          border: 1px solid rgba(254,202,202,0.8);
+          background: rgba(254,226,226,0.4);
+          color: #ef4444;
+          cursor: pointer;
+          display: flex; align-items: center; justify-content: center;
+          transition: all 0.18s;
+          flex-shrink: 0;
+        }
+        .cc-delete-btn:hover {
+          background: #ef4444;
+          border-color: #ef4444;
+          color: #fff;
+          box-shadow: 0 4px 12px -4px rgba(239,68,68,0.45);
+        }
 
-              <Stack direction="row" justifyContent="space-between">
-                <Typography color="text.secondary">Shipping</Typography>
-                <Typography sx={{ fontWeight: 700 }}>{cartItems.length > 0 ? "₹120" : "₹0"}</Typography>
-              </Stack>
+        /* ── Summary card ── */
+        .cc-summary {
+          background: #ffffff;
+          border: 1px solid rgba(226,232,240,0.9);
+          border-radius: 20px;
+          padding: 22px 22px 20px;
+          box-shadow: 0 4px 24px -8px rgba(13,148,136,0.12);
+        }
+        .cc-summary-title {
+          font-family: 'Lora', serif;
+          font-weight: 700;
+          font-size: 1.2rem;
+          color: #0f172a;
+          letter-spacing: -0.02em;
+          margin: 0 0 18px;
+        }
+        .cc-summary-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 11px;
+        }
+        .cc-summary-label {
+          font-family: 'Outfit', sans-serif;
+          font-size: 0.825rem;
+          color: #64748b;
+        }
+        .cc-summary-val {
+          font-family: 'Outfit', sans-serif;
+          font-size: 0.825rem;
+          font-weight: 700;
+          color: #0f172a;
+        }
+        .cc-summary-val.green { color: #059669; }
 
-              <Stack direction="row" justifyContent="space-between">
-                <Typography color="text.secondary">Discount</Typography>
-                <Typography sx={{ fontWeight: 700, color: "#059669" }}>-₹0</Typography>
-              </Stack>
-            </Stack>
+        .cc-divider {
+          height: 1px;
+          background: rgba(226,232,240,0.8);
+          margin: 14px 0;
+        }
 
-            <Divider sx={{ my: 2 }} />
+        .cc-total-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 18px;
+        }
+        .cc-total-label {
+          font-family: 'Outfit', sans-serif;
+          font-weight: 700;
+          font-size: 0.925rem;
+          color: #0f172a;
+        }
+        .cc-total-val {
+          font-family: 'Lora', serif;
+          font-weight: 700;
+          font-size: 1.35rem;
+          color: #0f172a;
+          letter-spacing: -0.02em;
+        }
 
-            <Stack direction="row" justifyContent="space-between" alignItems="center">
-              <Typography sx={{ fontWeight: 800 }}>Total</Typography>
-              <Typography sx={{ fontWeight: 900, fontSize: "1.1rem" }}>
-                ₹{cartItems.reduce((acc, item) => acc + item.product.price * item.quantity, 0) + (cartItems.length > 0 ? 120 : 0)}
-              </Typography>
-            </Stack>
+        /* coupon input */
+        .cc-coupon-wrap {
+          position: relative;
+          margin-bottom: 14px;
+        }
+        .cc-coupon {
+          width: 100%;
+          border-radius: 13px;
+          border: 1px solid rgba(226,232,240,0.9);
+          background: #f8fafc;
+          padding: 10px 14px;
+          font-family: 'Outfit', sans-serif;
+          font-size: 0.825rem;
+          color: #334155;
+          outline: none;
+          box-sizing: border-box;
+          transition: border-color 0.18s, box-shadow 0.18s;
+        }
+        .cc-coupon::placeholder { color: #cbd5e1; }
+        .cc-coupon:focus {
+          border-color: rgba(13,148,136,0.4);
+          box-shadow: 0 0 0 3px rgba(13,148,136,0.1);
+          background: #fff;
+        }
 
-            <TextField
-              size="small"
-              fullWidth
-              placeholder="Coupon code"
-              sx={{ mt: 2, "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
-            />
+        /* checkout btn */
+        .cc-checkout-btn {
+          width: 100%;
+          padding: 13px 0;
+          border-radius: 14px;
+          border: none;
+          background: linear-gradient(135deg, #0f766e 0%, #0d9488 60%, #14b8a6 100%);
+          color: #fff;
+          font-family: 'Outfit', sans-serif;
+          font-weight: 700;
+          font-size: 0.9rem;
+          letter-spacing: 0.02em;
+          cursor: pointer;
+          box-shadow: 0 4px 18px -4px rgba(13,148,136,0.45);
+          transition: all 0.22s cubic-bezier(0.4,0,0.2,1);
+          margin-bottom: 10px;
+        }
+        .cc-checkout-btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 28px -6px rgba(13,148,136,0.55);
+        }
+        .cc-checkout-btn:active { transform: translateY(0); }
 
-            <Button
-              fullWidth
-              variant="contained"
-              sx={{
-                mt: 2,
-                py: 1.25,
-                borderRadius: 2.5,
-                fontWeight: 800,
-                background: "linear-gradient(135deg, #0f766e 0%, #0d9488 60%, #14b8a6 100%)",
-              }}
-              onClick={paymentHandle}
-            >
-              Checkout
-            </Button>
+        .cc-continue-btn {
+          width: 100%;
+          padding: 11px 0;
+          border-radius: 14px;
+          border: 1px solid rgba(226,232,240,0.9);
+          background: transparent;
+          color: #64748b;
+          font-family: 'Outfit', sans-serif;
+          font-weight: 600;
+          font-size: 0.85rem;
+          cursor: pointer;
+          transition: all 0.18s;
+        }
+        .cc-continue-btn:hover {
+          background: #f8fafc;
+          border-color: rgba(13,148,136,0.25);
+          color: #0d9488;
+        }
+          
+        .cc-checkout-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
-            <Button
-              fullWidth
-              variant="text"
-              onClick={()=>navigate("/user/products")} // callback isliye jisse component render hote hi na chalge click karne ke baad chale
-              sx={{ mt: 1, fontWeight: 700, color: "text.secondary" }}
-            >
-              Continue Shopping
-            </Button>
-          </Paper>
-        </Stack>
-      </Box>
-      <Snackbar
-        open={open}
-        autoHideDuration={2000}
-        onClose={() => setopen(false)} // jab ye band hoga to jate jate ye setopen ko false kar dega aur iski bajah se, snackbar jo ki open the open={true} par bo open=false hone par fir close ho jayega, to ek tareeke se ye apne aap ko ui se hi hide kar raha hai onclose par
-        anchorOrigin={{ vertical: "top", horizontal: "right" }} // position lagayi hai uski
-      >
-        <Alert
-          severity={severity}
-          variant="filled"
+.cc-checkout-btn:disabled {
+  background: #999;
+  color: #ddd;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+        /* trust badges */
+        .cc-trust {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 14px;
+          margin-top: 14px;
+          flex-wrap: wrap;
+        }
+        .cc-trust-item {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          font-family: 'Outfit', sans-serif;
+          font-size: 10.5px;
+          color: #94a3b8;
+          font-weight: 500;
+        }
+      `}</style>
+
+      <div className="cc-wrap">
+        <div className="cc-inner">
+          {/* Page heading */}
+          <p className="cc-page-title">My Cart</p>
+          <p className="cc-page-sub">Review your selected items and place your order.</p>
+
+          <div className="cc-layout">
+            {/* ── Items column ── */}
+            <div className="cc-items-col">
+              {cartItems.map((item) => (
+                <div key={item.product._id} className="cc-item-card">
+                  <div className="cc-item-inner">
+                    <img
+                      src={item.product.images?.[0]?.url || "https://via.placeholder.com/150"}
+                      alt={item.product.name}
+                      className="cc-item-img"
+                    />
+                    <div className="cc-item-body">
+                      <h3 className="cc-item-name">{item.product.name}</h3>
+                      <p className="cc-item-cat">{item.product.category}</p>
+                      <div className="cc-item-footer">
+                        {/* Qty stepper */}
+                        <div className="cc-qty-wrap">
+                          <button className="cc-qty-btn" onClick={() => manageQuantity(item, false)}>
+                            <RemoveIcon sx={{ fontSize: 14 }} />
+                          </button>
+                          <span className="cc-qty-val">{item.quantity}</span>
+                          <button className="cc-qty-btn" onClick={() => manageQuantity(item, true)}>
+                            <AddIcon sx={{ fontSize: 14 }} />
+                          </button>
+                        </div>
+
+                        <div className="cc-item-right">
+                          <span className="cc-item-price">
+                            ₹{(item.product.price * item.quantity).toLocaleString("en-IN")}
+                          </span>
+                          <button className="cc-delete-btn" onClick={() => deleteFromCart(item)}>
+                            <DeleteOutlineIcon sx={{ fontSize: 16 }} />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              {cartItems.length === 0 && (
+                <div style={{
+                  textAlign: "center", padding: "60px 20px",
+                  background: "#fff", borderRadius: 18,
+                  border: "1px dashed rgba(226,232,240,0.9)",
+                }}>
+                  <p style={{ fontFamily: "'Lora',serif", fontSize: "1.2rem", color: "#94a3b8", margin: "0 0 6px" }}>
+                    Your cart is empty
+                  </p>
+                  <p style={{ fontFamily: "'Outfit',sans-serif", fontSize: "0.8rem", color: "#cbd5e1", margin: 0 }}>
+                    Add some products to get started
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* ── Summary column ── */}
+            <div className="cc-summary-col">
+              <div className="cc-summary">
+                <p className="cc-summary-title">Order Summary</p>
+
+                <div className="cc-summary-row">
+                  <span className="cc-summary-label">Subtotal ({cartItems.length} items)</span>
+                  <span className="cc-summary-val">₹{subtotal.toLocaleString("en-IN")}</span>
+                </div>
+                <div className="cc-summary-row">
+                  <span className="cc-summary-label">Shipping</span>
+                  <span className="cc-summary-val">₹{shipping}</span>
+                </div>
+                <div className="cc-summary-row">
+                  <span className="cc-summary-label">Discount</span>
+                  <span className="cc-summary-val green">−₹0</span>
+                </div>
+
+                <div className="cc-divider" />
+
+                <div className="cc-total-row">
+                  <span className="cc-total-label">Total</span>
+                  <span className="cc-total-val">₹{total.toLocaleString("en-IN")}</span>
+                </div>
+
+                <div className="cc-coupon-wrap">
+                  <input type="text" placeholder="Coupon code" className="cc-coupon" />
+                </div>
+
+                <button className="cc-checkout-btn" onClick={paymentHandle} disabled={cartItems.length===0} >
+                  Checkout →
+                </button>
+                <button className="cc-continue-btn" onClick={() => navigate("/user/products")}>
+                  Continue Shopping
+                </button>
+
+                {/* Trust badges */}
+                <div className="cc-trust">
+                  {[
+                    { icon: "🔒", text: "Secure checkout" },
+                    { icon: "↩", text: "Easy returns" },
+                    { icon: "🚚", text: "Fast delivery" },
+                  ].map(({ icon, text }) => (
+                    <span key={text} className="cc-trust-item">
+                      {icon}&nbsp;{text}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <Snackbar
+          open={open}
+          autoHideDuration={2000}
           onClose={() => setopen(false)}
+          anchorOrigin={{ vertical: "top", horizontal: "right" }}
         >
-         {msg}
-        </Alert>
-      </Snackbar>
-    </Box>
+          <Alert severity={severity} variant="filled" onClose={() => setopen(false)}>
+            {msg}
+          </Alert>
+        </Snackbar>
+      </div>
+    </>
   );
 };
 

@@ -1,191 +1,393 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import ProductCard from "./Card";
-import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getUserFromToken } from "../utils/auth";
-import { Button, Box, Typography,Snackbar,Alert } from "@mui/material";
+import { Snackbar, Alert } from "@mui/material";
 
 const ProductHeader = () => {
   const user = getUserFromToken();
   const [products, setproducts] = useState([]);
-  const [total, settotal] = useState(0)
-  const [page, setpage] = useState(1)
-  const [open, setopen] = useState(false)
-  const [open2, setopen2] = useState(false)
-  const [message, setmessage] = useState("")
-  const [severity, setseverity] = useState("")
-  const navigate = useNavigate()
-  let totalpages;
+  const [total, settotal] = useState(0);
+  const [page, setpage] = useState(1);
+  const [open, setopen] = useState(false);
+  const [message, setmessage] = useState("");
+  const [severity, setseverity] = useState("");
+  const navigate = useNavigate();
 
-    const gettingProducts = async () => {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/getProducts?page=${page}&limit=8`);
-      const data = await res.json();
-      setproducts(data.products);
-      console.log(data.totalDocuments)
-      settotal(data.totalDocuments)
-    };
+  const gettingProducts = async () => {
+    const res = await fetch(
+      `${import.meta.env.VITE_API_URL}/api/products/getProducts?page=${page}&limit=8`
+    );
+    const data = await res.json();
+    setproducts(data.products);
+    settotal(data.totalDocuments);
+  };
 
   useEffect(() => {
     gettingProducts();
   }, [page]);
 
-  totalpages=Math.ceil(total/8);
-  console.log(totalpages)
-
-  //   useEffect(() => {
-  //   console.log(products)
-  // }, [products]);
-
- 
+  const totalpages = Math.ceil(total / 8);
 
   const handleDelete = (id) => {
-    setproducts((prev) => prev.filter((prod) => prod._id !== id)) // prev me peeche ke sare products, fir un products ki id se comparison
-  }
+    setproducts((prev) => prev.filter((prod) => prod._id !== id));
+  };
 
-  const handleShowMessage=()=>{
-    setseverity("success")
+  const handleShowMessage = () => {
+    setseverity("success");
     setmessage("Product deleted successfully");
-   setopen(true)
-  }
+    setopen(true);
+  };
 
-  const handleShowMessage2=(msg,type="success")=>{
-    setseverity(type)
-    setmessage(msg)
-    setopen(true)
-  }
+  const handleShowMessage2 = (msg, type = "success") => {
+    setseverity(type);
+    setmessage(msg);
+    setopen(true);
+  };
 
   return (
-    <div className="w-[min(1120px,98%)] mx-auto">
-      <div className="relative overflow-hidden rounded-3xl border border-teal-900/10 bg-white/90 shadow-[0_20px_50px_-24px_rgba(15,118,110,0.25)] backdrop-blur-sm">
-        <div
-          className="pointer-events-none absolute inset-0 opacity-[0.35]"
-          style={{
-            background:
-              "radial-gradient(ellipse 80% 50% at 0% -20%, rgba(45,212,191,0.35), transparent), radial-gradient(ellipse 60% 40% at 100% 0%, rgba(13,148,136,0.2), transparent)",
-          }}
-        />
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Lora:wght@600;700&display=swap');
 
-        <div className="relative p-5 md:p-8">
-          <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-widest text-teal-700/80">
-                Browse catalog
-              </p>
-              <h1 className="mt-1 text-2xl font-bold tracking-tight text-stone-900 md:text-3xl">
-                Products
-              </h1>
-              <p className="mt-1 max-w-md text-sm text-stone-500">
-                Discover items with clear pricing and live stock status.
-              </p>
-            </div>
+        .ph-wrap {
+          width: min(1140px, 97%);
+          margin: 0 auto;
+        }
 
-            <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center md:w-auto">
-              <div className="relative w-full sm:max-w-xs md:w-80">
-                <input
-                  type="text"
-                  placeholder="Search product..."
-                  className="w-full rounded-2xl border border-stone-200 bg-white/80 py-2.5 pl-11 pr-4 text-sm text-stone-800 shadow-sm outline-none transition placeholder:text-stone-400 focus:border-teal-500/50 focus:ring-2 focus:ring-teal-500/20"
-                />
-                <svg
-                  className="absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-stone-400"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M21 21l-4.35-4.35m1.35-5.15a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
+        .ph-shell {
+          position: relative;
+          border-radius: 24px;
+          background: rgba(255,255,255,0.92);
+          border: 1px solid rgba(226,232,240,0.9);
+          box-shadow:
+            0 1px 2px rgba(15,23,42,0.04),
+            0 16px 48px -20px rgba(13,148,136,0.18);
+          backdrop-filter: blur(16px);
+          overflow: hidden;
+        }
+
+        /* subtle mesh glow */
+        .ph-shell::before {
+          content: '';
+          position: absolute;
+          top: -60px; left: -60px;
+          width: 340px; height: 240px;
+          background: radial-gradient(ellipse, rgba(20,184,166,0.12) 0%, transparent 70%);
+          pointer-events: none;
+        }
+        .ph-shell::after {
+          content: '';
+          position: absolute;
+          top: 0; right: -40px;
+          width: 260px; height: 180px;
+          background: radial-gradient(ellipse, rgba(13,148,136,0.08) 0%, transparent 70%);
+          pointer-events: none;
+        }
+
+        .ph-inner {
+          position: relative;
+          z-index: 1;
+          padding: 28px 28px 32px;
+        }
+
+        /* header row */
+        .ph-header {
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
+          margin-bottom: 28px;
+        }
+        @media (min-width: 768px) {
+          .ph-header { flex-direction: row; align-items: flex-end; justify-content: space-between; }
+        }
+
+        .ph-eyebrow {
+          font-family: 'Outfit', sans-serif;
+          font-size: 10.5px;
+          font-weight: 700;
+          letter-spacing: 0.13em;
+          text-transform: uppercase;
+          color: #0d9488;
+          display: flex;
+          align-items: center;
+          gap: 7px;
+          margin-bottom: 6px;
+        }
+        .ph-eyebrow-line {
+          height: 1px;
+          width: 28px;
+          background: linear-gradient(90deg, #14b8a6, transparent);
+        }
+
+        .ph-title {
+          font-family: 'Lora', serif;
+          font-weight: 700;
+          font-size: 1.75rem;
+          color: #0f172a;
+          letter-spacing: -0.03em;
+          line-height: 1.15;
+          margin: 0 0 5px;
+        }
+        @media (min-width: 768px) { .ph-title { font-size: 2rem; } }
+
+        .ph-subtitle {
+          font-family: 'Outfit', sans-serif;
+          font-size: 0.825rem;
+          color: #94a3b8;
+          margin: 0;
+          line-height: 1.5;
+        }
+
+        /* controls row */
+        .ph-controls {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          width: 100%;
+        }
+        @media (min-width: 640px) {
+          .ph-controls { flex-direction: row; align-items: center; width: auto; }
+        }
+
+        /* search */
+        .ph-search-wrap {
+          position: relative;
+          width: 100%;
+        }
+        @media (min-width: 640px) { .ph-search-wrap { width: 240px; } }
+        @media (min-width: 1024px) { .ph-search-wrap { width: 290px; } }
+
+        .ph-search {
+          width: 100%;
+          border-radius: 14px;
+          border: 1px solid rgba(226,232,240,0.9);
+          background: rgba(248,250,252,0.8);
+          padding: 10px 14px 10px 40px;
+          font-family: 'Outfit', sans-serif;
+          font-size: 0.82rem;
+          color: #334155;
+          outline: none;
+          box-shadow: 0 1px 4px rgba(15,23,42,0.04);
+          transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
+          box-sizing: border-box;
+        }
+        .ph-search::placeholder { color: #cbd5e1; }
+        .ph-search:focus {
+          border-color: rgba(13,148,136,0.45);
+          background: #ffffff;
+          box-shadow: 0 0 0 3px rgba(13,148,136,0.1), 0 1px 4px rgba(15,23,42,0.04);
+        }
+        .ph-search-icon {
+          position: absolute;
+          left: 12px;
+          top: 50%;
+          transform: translateY(-50%);
+          color: #94a3b8;
+          width: 16px; height: 16px;
+          pointer-events: none;
+        }
+
+        /* add button */
+        .ph-add-btn {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 7px;
+          font-family: 'Outfit', sans-serif;
+          font-size: 0.82rem;
+          font-weight: 600;
+          padding: 10px 18px;
+          border-radius: 14px;
+          border: none;
+          cursor: pointer;
+          white-space: nowrap;
+          background: linear-gradient(135deg, #0f766e 0%, #0d9488 60%, #14b8a6 100%);
+          color: #ffffff;
+          box-shadow: 0 4px 16px -4px rgba(13,148,136,0.45);
+          transition: all 0.22s cubic-bezier(0.4,0,0.2,1);
+          letter-spacing: 0.01em;
+        }
+        .ph-add-btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 24px -6px rgba(13,148,136,0.55);
+          background: linear-gradient(135deg, #0d6b63 0%, #0b857a 60%, #0d9488 100%);
+        }
+        .ph-add-btn:active { transform: translateY(0); }
+
+        /* grid */
+        .ph-grid {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 18px;
+        }
+        @media (min-width: 560px)  { .ph-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (min-width: 900px)  { .ph-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (min-width: 1200px) { .ph-grid { grid-template-columns: repeat(4, 1fr); } }
+
+        /* pagination */
+        .ph-pagination {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          gap: 10px;
+          margin-top: 32px;
+        }
+
+        .ph-page-btn {
+          font-family: 'Outfit', sans-serif;
+          font-size: 0.8rem;
+          font-weight: 600;
+          padding: 9px 20px;
+          border-radius: 12px;
+          border: 1px solid rgba(226,232,240,0.9);
+          background: #ffffff;
+          color: #475569;
+          cursor: pointer;
+          transition: all 0.18s ease;
+          letter-spacing: 0.01em;
+          box-shadow: 0 1px 4px rgba(15,23,42,0.05);
+        }
+        .ph-page-btn:hover:not(:disabled) {
+          border-color: rgba(13,148,136,0.3);
+          color: #0d9488;
+          background: #f0fdfa;
+          box-shadow: 0 4px 12px -4px rgba(13,148,136,0.18);
+        }
+        .ph-page-btn:disabled {
+          opacity: 0.38;
+          cursor: not-allowed;
+        }
+
+        .ph-page-indicator {
+          font-family: 'Outfit', sans-serif;
+          font-size: 0.8rem;
+          font-weight: 600;
+          padding: 9px 18px;
+          border-radius: 12px;
+          background: rgba(13,148,136,0.07);
+          border: 1px solid rgba(13,148,136,0.18);
+          color: #0f766e;
+          min-width: 90px;
+          text-align: center;
+          letter-spacing: 0.01em;
+        }
+      `}</style>
+
+      <div className="ph-wrap">
+        <div className="ph-shell">
+          <div className="ph-inner">
+            {/* ── Header ── */}
+            <div className="ph-header">
+              <div>
+                <p className="ph-eyebrow">
+                  <span className="ph-eyebrow-line" />
+                  Browse catalog
+                </p>
+                <h1 className="ph-title">Products</h1>
+                <p className="ph-subtitle">
+                  Discover items with clear pricing and live stock status.
+                </p>
               </div>
 
-              {user?.role === "admin" && (
-                <button
-                  type="button"
-                  onClick={() => navigate("/admin/products/newProduct")}
-                  className="inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-teal-700 to-teal-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-teal-900/25 transition hover:from-teal-800 hover:to-teal-700"
-                >
-                  <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+              <div className="ph-controls">
+                {/* Search */}
+                <div className="ph-search-wrap">
+                  <svg
+                    className="ph-search-icon"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M21 21l-4.35-4.35m1.35-5.15a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
                   </svg>
-                  Add New Product
-                </button>
-              )}
+                  <input
+                    type="text"
+                    placeholder="Search products…"
+                    className="ph-search"
+                  />
+                </div>
+
+                {/* Add product (admin) */}
+                {user?.role === "admin" && (
+                  <button
+                    type="button"
+                    className="ph-add-btn"
+                    onClick={() => navigate("/admin/products/newProduct")}
+                  >
+                    <svg
+                      width="14"
+                      height="14"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Add Product
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* ── Grid ── */}
+            <div className="ph-grid">
+              {products.map((p) => (
+                <ProductCard
+                  key={p._id}
+                  product={p}
+                  onDelete={handleDelete}
+                  onFetch={gettingProducts}
+                  onShowMessage={handleShowMessage}
+                  onShowMessage2={handleShowMessage2}
+                />
+              ))}
+            </div>
+
+            {/* ── Pagination ── */}
+            <div className="ph-pagination">
+              <button
+                className="ph-page-btn"
+                disabled={page === 1}
+                onClick={() => setpage(page - 1)}
+              >
+                ← Prev
+              </button>
+
+              <span className="ph-page-indicator">
+                Page {page} / {totalpages || 1}
+              </span>
+
+              <button
+                className="ph-page-btn"
+                disabled={page === totalpages}
+                onClick={() => setpage(page + 1)}
+              >
+                Next →
+              </button>
             </div>
           </div>
-
-          <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {products.map((p) => (
-              <ProductCard key={p._id} product={p} onDelete={handleDelete} onFetch={gettingProducts} onShowMessage={handleShowMessage} onShowMessage2={handleShowMessage2} />
-            ))}
-          </div>
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              gap: 2,
-              mt: 4,
-            }}
-          >
-            <Button
-              variant="outlined"
-              disabled={page === 1}
-              onClick={() => setpage(page - 1)}
-              sx={{
-                textTransform: "none",
-                borderRadius: 2,
-                px: 2.5,
-              }}
-            >
-              Prev
-            </Button>
-
-            <Typography
-              sx={{
-                fontWeight: 600,
-                px: 2,
-                py: 0.5,
-                borderRadius: 2,
-                bgcolor: "rgba(13, 148, 136, 0.1)",
-                color: "teal.800",
-              }}
-            >
-              Page {page}
-            </Typography>
-
-            <Button
-              variant="contained"
-              onClick={() => setpage(page + 1)}
-              disabled={page===totalpages}
-              sx={{
-                textTransform: "none",
-                borderRadius: 2,
-                px: 2.5,
-              }}
-            >
-              Next
-            </Button>
-          </Box>
         </div>
-      </div>
-      <Snackbar
-        open={open}
-        autoHideDuration={2000}
-        onClose={() => setopen(false)} // jab ye band hoga to jate jate ye setopen ko false kar dega aur iski bajah se, snackbar jo ki open the open={true} par bo open=false hone par fir close ho jayega, to ek tareeke se ye apne aap ko ui se hi hide kar raha hai onclose par
-        anchorOrigin={{ vertical: "top", horizontal: "right" }} // position lagayi hai uski
-      >
-        <Alert
-          severity={severity}
-          variant="filled"
+
+        {/* Toast */}
+        <Snackbar
+          open={open}
+          autoHideDuration={2000}
           onClose={() => setopen(false)}
+          anchorOrigin={{ vertical: "top", horizontal: "right" }}
         >
-          {message}
-        </Alert>
-      </Snackbar>
-    </div>
+          <Alert severity={severity} variant="filled" onClose={() => setopen(false)}>
+            {message}
+          </Alert>
+        </Snackbar>
+      </div>
+    </>
   );
 };
 
