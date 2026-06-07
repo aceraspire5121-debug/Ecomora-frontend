@@ -1,6 +1,6 @@
 import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useState,useEffect } from "react";
+import { useState, useEffect } from "react";
 
 const T = {
   cream: "#FAF8F5",
@@ -17,75 +17,160 @@ const T = {
   shadow: "0 4px 32px -8px rgba(28,20,16,0.08)",
 };
 
-const OrderSuccess = () => {
-  const {id}=useParams();
-  const navigate = useNavigate();
-  const [order, setorder] = useState({})
-  const [loading, setloading] = useState(true)
-  const [isAdmin, setisAdmin] = useState(false)
+/* ── inject styles once ── */
+const styleTag = document.createElement("style");
+styleTag.textContent = `
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');
 
-  const fetchdata=async()=>{
-    try {
-      const token=localStorage.getItem("CommerceToken");
-      if (!token) {
-  alert("Please login again");
-  return;
+  @keyframes ecmSuccessFadeUp {
+    from { opacity: 0; transform: translateY(24px) scale(0.98); }
+    to   { opacity: 1; transform: translateY(0)   scale(1);    }
+  }
+  @keyframes ecmCheckPop {
+    0%   { transform: scale(0.6); opacity: 0; }
+    70%  { transform: scale(1.15); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  @keyframes ecmSpinner {
+    to { transform: rotate(360deg); }
+  }
+  @keyframes ecmPulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.4; }
+  }
+
+  .ecm-success-card  { animation: ecmSuccessFadeUp .5s cubic-bezier(.22,.68,0,1.2) both; }
+  .ecm-check-bubble  { animation: ecmCheckPop .5s cubic-bezier(.22,.68,0,1.2) .15s both; }
+  .ecm-spinner {
+    width: 36px; height: 36px; border-radius: 50%;
+    border: 3px solid rgba(15,118,110,0.15);
+    border-top-color: #0f766e;
+    animation: ecmSpinner .75s linear infinite;
+  }
+  .ecm-skeleton {
+    background: linear-gradient(90deg, #F3EFE8 25%, #FAF8F5 50%, #F3EFE8 75%);
+    background-size: 200% 100%;
+    animation: ecmPulse 1.4s ease-in-out infinite;
+    border-radius: 6px;
+  }
+`;
+if (!document.head.querySelector("[data-ecm-success]")) {
+  styleTag.setAttribute("data-ecm-success", "1");
+  document.head.appendChild(styleTag);
 }
-      const res=await fetch(`${import.meta.env.VITE_API_URL}/api/orders/${id}`,{
-     method: "GET",
-  headers: {
-    Authorization: `Bearer ${token}`
-  }
+
+/* ── Loading screen ── */
+const LoadingScreen = () => (
+  <div style={{
+    width: "min(680px, 98%)", margin: "0 auto",
+    background: "#fff", borderRadius: 20,
+    border: `1px solid ${T.border}`, boxShadow: T.shadow,
+    overflow: "hidden",
+  }}>
+    {/* header skeleton */}
+    <div style={{
+      background: T.cream, padding: "36px 32px 28px",
+      borderBottom: `1px solid rgba(60,40,20,0.07)`,
+      display: "flex", flexDirection: "column", alignItems: "center", gap: 14,
+    }}>
+      <div style={{
+        width: 56, height: 56, borderRadius: "50%",
+        background: "#F0FDF8", border: `1px solid rgba(13,148,136,0.2)`,
+        display: "flex", alignItems: "center", justifyContent: "center",
+      }}>
+        <div className="ecm-spinner" />
+      </div>
+      <div className="ecm-skeleton" style={{ width: 160, height: 22 }} />
+      <div className="ecm-skeleton" style={{ width: 240, height: 14 }} />
+    </div>
+    {/* body skeleton */}
+    <div style={{ padding: "24px 32px", display: "flex", flexDirection: "column", gap: 12 }}>
+      <div style={{
+        display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1,
+        background: "rgba(60,40,20,0.07)", borderRadius: 12, overflow: "hidden",
+      }}>
+        {[1,2,3,4].map(n => (
+          <div key={n} style={{ background: T.cream, padding: "13px 16px", display: "flex", flexDirection: "column", gap: 8 }}>
+            <div className="ecm-skeleton" style={{ width: 60, height: 10 }} />
+            <div className="ecm-skeleton" style={{ width: 100, height: 16 }} />
+          </div>
+        ))}
+      </div>
+      {[1,2,3].map(n => (
+        <div key={n} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderBottom: `1px solid rgba(60,40,20,0.06)` }}>
+          <div className="ecm-skeleton" style={{ width: 46, height: 46, borderRadius: 8, flexShrink: 0 }} />
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
+            <div className="ecm-skeleton" style={{ width: "60%", height: 14 }} />
+            <div className="ecm-skeleton" style={{ width: "30%", height: 11 }} />
+          </div>
+          <div className="ecm-skeleton" style={{ width: 60, height: 16 }} />
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+const OrderSuccess = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [order, setorder] = useState({});
+  const [loading, setloading] = useState(true);
+  const [isAdmin, setisAdmin] = useState(false);
+
+  const fetchdata = async () => {
+    try {
+      const token = localStorage.getItem("CommerceToken");
+      if (!token) { alert("Please login again"); return; }
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/orders/${id}`, {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` }
       });
-      const result=await res.json();
-      if(!res.ok)
-      {
-        console.log("order not found",result)
-        alert("order not found");
-        return;
-      }
-      console.log("success",result)
-     setorder(result.order)
-     setisAdmin(result.isAdmin)
+      const result = await res.json();
+      if (!res.ok) { console.log("order not found", result); alert("order not found"); return; }
+      console.log("success", result);
+      setorder(result.order);
+      setisAdmin(result.isAdmin);
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
-  }
-
- useEffect(() => {
-    const fetchDataWrapper = async () => {
-    await fetchdata();
-    setloading(false);
   };
-  fetchDataWrapper();
- }, [id])
 
- if (loading) return <p>Loading...</p>; // dekho jabtk data nhi aayega loading false hoga jiski bajah se yahi par return kar jayega aur loading ... dikhane lagega neeche ka code render hi nhi hoga return hone ki bajah se , jab setorder se state change hota hai data aane par tab re render hota hai aur tabtk loading false bhi ho gaya hota hai isliye poora render karta hai
- 
+  useEffect(() => {
+    const fetchDataWrapper = async () => {
+      await fetchdata();
+      setloading(false);
+    };
+    fetchDataWrapper();
+  }, [id]);
 
-
+  if (loading) return <LoadingScreen />;
 
   const subtotal = order.items.reduce((s, i) => s + i.price * i.quantity, 0);
   const shipping = 120;
 
   return (
     <div style={{ width: "min(680px, 98%)", margin: "0 auto" }}>
-      <div style={{
-        background: "#fff", borderRadius: 20,
-        border: `1px solid ${T.border}`, boxShadow: T.shadow, overflow: "hidden",
-      }}>
-
+      <div
+        className="ecm-success-card"
+        style={{
+          background: "#fff", borderRadius: 20,
+          border: `1px solid ${T.border}`, boxShadow: T.shadow, overflow: "hidden",
+        }}
+      >
         {/* ── Success header ── */}
         <div style={{
           background: T.cream, padding: "36px 32px 28px",
           textAlign: "center", borderBottom: `1px solid rgba(60,40,20,0.07)`,
         }}>
-          <div style={{
-            width: 56, height: 56, borderRadius: "50%",
-            background: "#F0FDF8", border: `1px solid rgba(13,148,136,0.2)`,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            margin: "0 auto 16px",
-          }}>
+          <div
+            className="ecm-check-bubble"
+            style={{
+              width: 56, height: 56, borderRadius: "50%",
+              background: "#F0FDF8", border: `1px solid rgba(13,148,136,0.2)`,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              margin: "0 auto 16px",
+            }}
+          >
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
               stroke="#0f766e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M20 6L9 17l-5-5" />
@@ -123,10 +208,10 @@ const OrderSuccess = () => {
             borderRadius: 12, overflow: "hidden", marginBottom: 20,
           }}>
             {[
-              { label: "Order ID",    val: order.orderId, mono: true },
-              { label: "Placed on",   val: new Date(order.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) },
-              { label: "Payment ID",  val: order.paymentId, mono: true },
-              { label: "Status",      val: "Paid", highlight: true },
+              { label: "Order ID",   val: order?.orderId,   mono: true },
+              { label: "Placed on",  val: new Date(order?.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) },
+              { label: "Payment ID", val: order?.paymentId, mono: true },
+              { label: "Status",     val: "Paid", highlight: true },
             ].map(({ label, val, mono, highlight }) => (
               <div key={label} style={{ background: T.cream, padding: "13px 16px" }}>
                 <p style={{
@@ -141,8 +226,9 @@ const OrderSuccess = () => {
                   fontWeight: 700,
                   fontSize: mono ? 12 : "1.05rem",
                   color: highlight ? T.teal : mono ? T.inkLight : T.ink,
+                  wordBreak: "break-all",
                 }}>
-                  {val}
+                  {val ?? "—"}
                 </p>
               </div>
             ))}
@@ -157,7 +243,7 @@ const OrderSuccess = () => {
             Items ordered
           </p>
 
-          {order.items.map((item, idx) => (
+          {order.items?.map((item, idx) => (
             <div key={item.product} style={{
               display: "flex", alignItems: "center", gap: 12,
               padding: "10px 0",
@@ -217,31 +303,33 @@ const OrderSuccess = () => {
         {/* ── Actions ── */}
         <div style={{ padding: "20px 32px 28px", display: "flex", gap: 10 }}>
           <button
-            onClick={isAdmin?()=>navigate(-1):() => navigate("/user/products")}
+            onClick={isAdmin ? () => navigate(-1) : () => navigate("/user/products")}
             style={{
               flex: 1, height: 42, borderRadius: 10,
               background: "transparent", border: `1px solid ${T.borderMid}`,
               color: T.inkLight, fontFamily: "'DM Sans', sans-serif",
               fontSize: 13, fontWeight: 600, cursor: "pointer", transition: "all 0.15s",
             }}
-            onMouseEnter={e => { e.target.style.borderColor = T.tealBorder; e.target.style.background = T.tealLight; e.target.style.color = T.teal; }}
-            onMouseLeave={e => { e.target.style.borderColor = T.borderMid; e.target.style.background = "transparent"; e.target.style.color = T.inkLight; }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = T.tealBorder; e.currentTarget.style.background = T.tealLight; e.currentTarget.style.color = T.teal; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = T.borderMid; e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = T.inkLight; }}
           >
             {isAdmin ? "Back to Orders" : "Browse Products"}
           </button>
-         { !isAdmin && <button
-            onClick={() => navigate("/users/orders")}
-            style={{
-              flex: 1, height: 42, borderRadius: 10,
-              background: T.ink, border: "none",
-              color: T.cream, fontFamily: "'DM Sans', sans-serif",
-              fontSize: 13, fontWeight: 600, cursor: "pointer", transition: "all 0.18s",
-            }}
-            onMouseEnter={e => { e.target.style.background = T.accent; e.target.style.boxShadow = "0 4px 16px rgba(184,98,42,0.28)"; }}
-            onMouseLeave={e => { e.target.style.background = T.ink; e.target.style.boxShadow = "none"; }}
-          >
-            View all orders →
-          </button>}
+          {!isAdmin && (
+            <button
+              onClick={() => navigate("/users/orders")}
+              style={{
+                flex: 1, height: 42, borderRadius: 10,
+                background: T.ink, border: "none",
+                color: T.cream, fontFamily: "'DM Sans', sans-serif",
+                fontSize: 13, fontWeight: 600, cursor: "pointer", transition: "all 0.18s",
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = T.accent; e.currentTarget.style.boxShadow = "0 4px 16px rgba(184,98,42,0.28)"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = T.ink; e.currentTarget.style.boxShadow = "none"; }}
+            >
+              View all orders →
+            </button>
+          )}
         </div>
       </div>
     </div>
