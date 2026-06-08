@@ -69,6 +69,54 @@ if (!document.getElementById("orp-styles")) {
 
     /* Scrollbar hide */
     .orp-filters::-webkit-scrollbar { display: none; }
+
+    .ph-pagination {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          gap: 10px;
+          margin-top: 32px;
+        }
+
+        .ph-page-btn {
+          font-family: 'Outfit', sans-serif;
+          font-size: 0.8rem;
+          font-weight: 600;
+          padding: 9px 20px;
+          border-radius: 12px;
+          border: 1px solid rgba(226,232,240,0.9);
+          background: #ffffff;
+          color: #475569;
+          cursor: pointer;
+          transition: all 0.18s ease;
+          letter-spacing: 0.01em;
+          box-shadow: 0 1px 4px rgba(15,23,42,0.05);
+        }
+        .ph-page-btn:hover:not(:disabled) {
+          border-color: rgba(13,148,136,0.3);
+          color: #0d9488;
+          background: #f0fdfa;
+          box-shadow: 0 4px 12px -4px rgba(13,148,136,0.18);
+        }
+        .ph-page-btn:disabled {
+          opacity: 0.38;
+          cursor: not-allowed;
+        }
+
+        .ph-page-indicator {
+          font-family: 'Outfit', sans-serif;
+          font-size: 0.8rem;
+          font-weight: 600;
+          padding: 9px 18px;
+          border-radius: 12px;
+          background: rgba(13,148,136,0.07);
+          border: 1px solid rgba(13,148,136,0.18);
+          color: #0f766e;
+          min-width: 90px;
+          text-align: center;
+          letter-spacing: 0.01em;
+        }
+
   `;
   document.head.appendChild(el);
 }
@@ -317,9 +365,12 @@ const OrdersPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState(false);
   const [customer, setCustomer] = useState({});
+  const [total, settotal] = useState(0)
+  const [page, setpage] = useState(1);
   const navigate  = useNavigate();
   const { userid } = useParams();
   const isAdminView = !!userid;
+  const per_page=5;
 
   useEffect(() => {
     if (!userid) return;
@@ -340,27 +391,32 @@ const OrdersPage = () => {
     (async () => {
       try {
         const token = localStorage.getItem("CommerceToken");
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/orders/getOrders`, {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/orders/getOrders?page=${page}&limit=${per_page}&filter=${filter}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
         if (!res.ok) console.error("Orders fetch failed:", data);
         setOrders(data.order || []);
+        settotal(data.totalorders)
       } catch (err) { console.error(err); setError(true); }
       finally { setLoading(false); }
     })();
-  }, []);
+  }, [page,filter]);
+
 
   const filtered = filter === "all" ? orders : orders.filter((o) => o.status === filter);
 
   const stats = {
     total:   orders.length,
-    paid:    orders.filter((o) => o.status === "paid").length,
+    paid:    orders.filter((o) => o.status === "paid").length ,
     pending: orders.filter((o) => o.status === "pending").length,
     spent:   orders.filter((o) => o.status === "paid").reduce((s, o) => s + o.amount, 0),
   };
 
+const totalpages=Math.ceil(total/per_page);
+
   return (
+
     <div style={{ width: "min(1140px, 97%)", margin: "0 auto" }}>
       <Navbar />
 
@@ -468,11 +524,11 @@ const OrdersPage = () => {
               WebkitOverflowScrolling: "touch", paddingBottom: 2,
             }}
           >
-            {["all", "paid", "pending", "failed"].map((f) => (
+            {["all", "paid", "pending"].map((f) => (
               <button
                 key={f}
                 className="orp-chip"
-                onClick={() => setFilter(f)}
+                onClick={() => {setFilter(f),setpage(1)}}
                 style={{
                   padding: "5px 16px", borderRadius: 20,
                   fontSize: 12, fontWeight: 600,
@@ -514,7 +570,34 @@ const OrdersPage = () => {
           {!loading && filtered.map((order) => (
             <OrderCard key={order._id} order={order} />
           ))}
+
+
+<div className="ph-pagination">
+              <button
+                className="ph-page-btn"
+                disabled={page === 1}
+                onClick={() => setpage(page - 1)}
+              >
+                ← Prev
+              </button>
+
+              <span className="ph-page-indicator">
+                Page {page} / {totalpages || 1}
+              </span>
+
+              <button
+                className="ph-page-btn"
+                disabled={page === totalpages}
+                onClick={() => setpage(page + 1)}
+              >
+                Next →
+              </button>
+            </div>
+
         </div>
+
+ 
+
       </div>
 
       <Snackbar open={error} autoHideDuration={3000} onClose={() => setError(false)}
@@ -523,6 +606,8 @@ const OrdersPage = () => {
           Failed to load orders
         </Alert>
       </Snackbar>
+
+      
     </div>
   );
 };
