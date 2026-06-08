@@ -12,20 +12,41 @@ const ProductHeader = () => {
   const [open, setopen] = useState(false);
   const [message, setmessage] = useState("");
   const [severity, setseverity] = useState("");
+ const [debouncedsearch, setdebouncedsearch] = useState("")
+  const [search, setsearch] = useState("");
   const navigate = useNavigate();
 
   const gettingProducts = async () => {
     const res = await fetch(
-      `${import.meta.env.VITE_API_URL}/api/products/getProducts?page=${page}&limit=8`
+      `${import.meta.env.VITE_API_URL}/api/products/getProducts?page=${page}&limit=8&keyword=${debouncedsearch}`
     );
     const data = await res.json();
     setproducts(data.products);
     settotal(data.totalDocuments);
   };
 
+
+  // ok so return is basically the cleanup function, if you mention return then the cleanup function will run otherwise not, and whatever you will write with the return is the action that will be performed in the name of cleanup function
+
+useEffect(() => {
+  
+ const timer= setTimeout(() => {
+    setdebouncedsearch(search)
+  }, 500);
+
+  return () => {
+    clearTimeout(timer) // this is the callback function, it is needed to implement debouncing i.e instead of request at every letter, we are using debounced search which will set the debouncedsearch after 0.5 seconds the user stops typing so now search will take place after 0.5s after user stops typing not on i,ip,iph,ipho,iphon,iphone
+
+    // when we type i, this useeffect runs, a timeout is created with a cleanup function as return, react will always call the cleanup function before running the useeffect again if the cleanup function is present
+    //now we type ip, so the cleaup function is called and the previous timeout is cleaned using its id saved in timer
+    // this similar process continues till the user took a break of 0.5 seconds at this break the debouncedsearch is set and search took place
+  }
+}, [search])
+
+
   useEffect(() => {
     gettingProducts();
-  }, [page]);
+  }, [page,debouncedsearch]);
 
   const totalpages = Math.ceil(total / 8);
 
@@ -308,6 +329,8 @@ const ProductHeader = () => {
                   </svg>
                   <input
                     type="text"
+                    value={search} // menas whatever you will type will become its value
+                    onChange={(e)=>setsearch(e.target.value)}// callback isliye jisse ye render hote time nhi chale balki jab change ho tabhi chale
                     placeholder="Search products…"
                     className="ph-search"
                   />
