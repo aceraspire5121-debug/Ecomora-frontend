@@ -376,15 +376,16 @@ const OrdersPage = () => {
     if (!userid) return;
     (async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/customers/${userid}`);
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/customers/${userid}?page=${page}&limit=${per_page}&filter=${filter}`);
         const result = await res.json();
         if (!res?.ok) { console.log(result.message); return; }
         setCustomer(result.user);
         setOrders(result.user.userorders);
+        settotal(result.totalDocuments)
       } catch (error) { console.log(error); }
       finally { setLoading(false); }
     })();
-  }, [userid]);
+  }, [userid,page,filter]);
 
   useEffect(() => {
     if (userid) return;
