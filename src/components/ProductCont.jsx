@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { getUserFromToken } from "../utils/auth";
 import { Snackbar, Alert } from "@mui/material";
 
+
 const ProductHeader = () => {
   const user = getUserFromToken();
   const [products, setproducts] = useState([]);

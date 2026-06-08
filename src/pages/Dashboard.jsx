@@ -174,7 +174,7 @@ const AVATAR_COLORS = [
   { bg: "#ede9fe", color: "#3b0764" },
   { bg: "#fce7f3", color: "#831843" },
 ];
-const getAvatarColor = (name = "") => AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COLORS.length];
+const getAvatarColor = (name = "") => AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COLORS.length]; //name="" iska mtlb agar name pass nhi kara hai to name ko "" krdo
 const getInitials    = (name = "") => name.split(" ").slice(0, 2).map(w => w[0]).join("").toUpperCase();
 
 // ─── Stat Card ────────────────────────────────────────────────────────────────
