@@ -361,6 +361,7 @@ const OrderCard = ({ order }) => {
 // ─── Main Page ─────────────────────────────────────────────────────────────────
 const OrdersPage = () => {
   const [orders, setOrders]   = useState([]);
+  const [stats, setstats] = useState({})
   const [filter, setFilter]   = useState("all");
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState(false);
@@ -382,6 +383,9 @@ const OrdersPage = () => {
         setCustomer(result.user);
         setOrders(result.user.userorders);
         settotal(result.totalDocuments)
+        setstats(result.stats)
+                console.log(result.stats)
+
       } catch (error) { console.log(error); }
       finally { setLoading(false); }
     })();
@@ -399,6 +403,8 @@ const OrdersPage = () => {
         if (!res.ok) console.error("Orders fetch failed:", data);
         setOrders(data.order || []);
         settotal(data.totalorders)
+        setstats(data.stats)
+        console.log(data.stats)
       } catch (err) { console.error(err); setError(true); }
       finally { setLoading(false); }
     })();
@@ -407,12 +413,12 @@ const OrdersPage = () => {
 
   const filtered = filter === "all" ? orders : orders.filter((o) => o.status === filter);
 
-  const stats = {
-    total:   orders.length,
-    paid:    orders.filter((o) => o.status === "paid").length ,
-    pending: orders.filter((o) => o.status === "pending").length,
-    spent:   orders.filter((o) => o.status === "paid").reduce((s, o) => s + o.amount, 0),
-  };
+  // const stats = {
+  //   total:   orders.length,
+  //   paid:    orders.filter((o) => o.status === "paid").length ,
+  //   pending: orders.filter((o) => o.status === "pending").length,
+  //   spent:   orders.filter((o) => o.status === "paid").reduce((s, o) => s + o.amount, 0),
+  // };
 
 const totalpages=Math.ceil(total/per_page);
 
@@ -486,10 +492,10 @@ const totalpages=Math.ceil(total/per_page);
           {/* Stats */}
           <div className="orp-stats-grid" style={{ marginTop: 20 }}>
             {[
-              { label: "Total orders", val: stats.total,                                 color: T.ink },
-              { label: "Paid",         val: stats.paid,                                  color: T.teal },
-              { label: "Pending",      val: stats.pending,                               color: "#d97706" },
-              { label: "Total spent",  val: `₹${stats.spent.toLocaleString("en-IN")}`,  color: T.ink },
+              { label: "Total orders", val: stats?.totalorders||0,                                 color: T.ink },
+              { label: "Paid",         val: stats?.paidorders||0,                                  color: T.teal },
+              { label: "Pending",      val: stats?.pendingorders ||0,                               color: "#d97706" },
+              { label: "Total spent",  val: `₹${(stats?.totalspent||0).toLocaleString("en-IN")}`,  color: T.ink },
             ].map(({ label, val, color }) => (
               <div key={label} style={{
                 background: "rgba(248,250,252,0.8)",
