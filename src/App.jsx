@@ -14,6 +14,7 @@ import OrderSuccess from "./pages/Receipt";
 import OrdersPage from "./pages/Order";
 import AdminDashboard from "./pages/Dashboard";
 import UsersPage from "./pages/UserPage";
+import Profile from "./pages/Profile";
 function App() {
   return (
     <BrowserRouter>
@@ -27,6 +28,7 @@ function App() {
         <Route path={"/admin/products/newProduct"} element={<ProtectedRoute><AddProduct/></ProtectedRoute>} />
         <Route path={"/admin/products/editProduct/:id"} element={<ProtectedRoute><EditProduct/></ProtectedRoute>} />
         <Route path={"/users/cart"} element={<ProtectedRoute><Cart/></ProtectedRoute>} />
+        <Route path={"/users/profile"} element={<ProtectedRoute><Profile/></ProtectedRoute>} />
         <Route path={"/users/receipt/:id"} element={<ProtectedRoute><OrderSuccess/></ProtectedRoute>} />
         <Route path={"/users/orders"} element={<ProtectedRoute><OrdersPage/></ProtectedRoute>} />
         <Route path={"/admin/:userid/orders"} element={<ProtectedRoute><OrdersPage/></ProtectedRoute>} />

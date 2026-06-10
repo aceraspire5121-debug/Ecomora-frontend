@@ -314,7 +314,7 @@ const Navbar = () => {
                   </svg>
                 ),
                 label: "Profile",
-                onClick: () => { navigate("/profile"); handleClose(); },
+                onClick: () => { navigate("/users/profile"); handleClose(); },
               },
               {
                 icon: (
