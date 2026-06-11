@@ -17,14 +17,128 @@ if (!document.getElementById("orp-styles")) {
   const el = document.createElement("style");
   el.id = "orp-styles";
   el.textContent = `
-    .orp-stats-grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; }
-    @media (max-width: 640px) {
-      .orp-stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
-      .orp-hband { padding: 20px 18px 18px !important; }
-      .orp-body  { padding: 16px 18px 28px !important; }
+    /* ── Reset / base ── */
+    *, *::before, *::after { box-sizing: border-box; }
+
+    /* ── Outer wrapper ── */
+    .orp-root {
+      width: min(1140px, 94%);
+      margin: 0 auto;
+    }
+    @media (max-width: 480px) {
+      .orp-root { width: 100%; padding: 0 10px; }
     }
 
-    /* Card hover */
+    /* ── Shell card ── */
+    .orp-shell {
+      margin-top: 20px;
+      background: #fff;
+      border-radius: 22px;
+      border: 1px solid rgba(226,232,240,0.9);
+      box-shadow: 0 4px 32px -8px rgba(15,23,42,0.08);
+      overflow: hidden;
+    }
+
+    /* ── Header band ── */
+    .orp-hband {
+      background: #fafafa;
+      border-bottom: 1px solid rgba(226,232,240,0.9);
+      padding: 28px 32px 24px;
+    }
+    @media (max-width: 600px) {
+      .orp-hband { padding: 20px 16px 18px; }
+    }
+
+    /* ── Title row ── */
+    .orp-title-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    /* ── Back button ── */
+    .orp-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 0 16px;
+      height: 36px;
+      border-radius: 10px;
+      border: 1px solid rgba(203,213,225,0.9);
+      background: transparent;
+      color: #64748b;
+      font-family: 'Outfit', sans-serif;
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all 0.18s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .orp-back:hover { background: #0f172a; color: #fff; border-color: #0f172a; }
+
+    /* ── Stats grid ── */
+    .orp-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-top: 20px;
+    }
+    @media (max-width: 700px) {
+      .orp-stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+    }
+    @media (max-width: 380px) {
+      .orp-stats-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+    }
+
+    .orp-stat-tile {
+      background: rgba(248,250,252,0.8);
+      border: 1px solid rgba(226,232,240,0.9);
+      border-radius: 13px;
+      padding: 12px 16px;
+    }
+    @media (max-width: 480px) {
+      .orp-stat-tile { padding: 10px 12px; border-radius: 10px; }
+    }
+
+    /* ── Body ── */
+    .orp-body {
+      padding: 20px 32px 28px;
+    }
+    @media (max-width: 600px) {
+      .orp-body { padding: 16px 14px 24px; }
+    }
+
+    /* ── Filter chips ── */
+    .orp-filters {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 18px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 4px;
+    }
+    .orp-filters::-webkit-scrollbar { display: none; }
+
+    .orp-chip {
+      padding: 6px 18px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      flex-shrink: 0;
+      min-height: 34px;
+      font-family: 'Outfit', sans-serif;
+      text-transform: capitalize;
+      transition: all 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .orp-chip:hover { background: rgba(13,148,136,0.07) !important; color: #0d9488 !important; border-color: rgba(13,148,136,0.22) !important; }
+
+    /* ── Order card ── */
     .orp-card {
       background: #fff;
       border: 1px solid rgba(226,232,240,0.9);
@@ -39,84 +153,147 @@ if (!document.getElementById("orp-styles")) {
       transform: translateY(-2px);
     }
 
-    /* Reveal button */
+    /* ── Card header ── */
+    .orp-head {
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      background: #fafafa;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.15s;
+      min-height: 58px;
+    }
+    .orp-head:active { background: #f0fdfa; }
+
+    .orp-order-id {
+      font-family: 'Outfit', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      color: #0f172a;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin: 0;
+    }
+    .orp-order-meta {
+      font-family: 'Outfit', sans-serif;
+      font-size: 11.5px;
+      color: #94a3b8;
+      margin: 2px 0 0;
+    }
+    .orp-amount {
+      font-family: 'Lora', serif;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: #0f172a;
+      flex-shrink: 0;
+      padding-left: 6px;
+      white-space: nowrap;
+    }
+    @media (max-width: 400px) {
+      .orp-amount { font-size: 0.95rem; padding-left: 4px; }
+      .orp-order-id { font-size: 12px; }
+    }
+
+    /* ── Card footer ── */
+    .orp-foot {
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      background: #fafafa;
+      border-top: 1px solid rgba(226,232,240,0.9);
+      flex-wrap: nowrap;
+    }
+    @media (max-width: 480px) {
+      .orp-foot { flex-wrap: wrap; gap: 8px; }
+      .orp-foot > div { flex: 1 1 100%; }
+      .orp-foot .orp-reveal { width: 100%; justify-content: center; }
+    }
+
+    /* ── Reveal button ── */
     .orp-reveal {
-      opacity: 0;
-      transform: translateX(8px);
-      pointer-events: none;
-      transition: opacity 0.2s ease, transform 0.22s ease, background 0.15s, color 0.15s, border-color 0.15s;
+      flex-shrink: 0;
+      height: 34px;
+      padding: 0 14px;
+      border-radius: 9px;
+      border: 1px solid rgba(203,213,225,0.9);
+      background: transparent;
+      color: #64748b;
+      font-family: 'Outfit', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.18s;
+      -webkit-tap-highlight-color: transparent;
+      /* visible on touch, hover-only on pointer devices */
+      opacity: 1;
     }
     @media (hover: hover) {
-      .orp-card:hover .orp-reveal { opacity: 1; transform: translateX(0); pointer-events: auto; }
+      .orp-reveal {
+        opacity: 0;
+        transform: translateX(8px);
+        pointer-events: none;
+      }
+      .orp-card:hover .orp-reveal {
+        opacity: 1;
+        transform: translateX(0);
+        pointer-events: auto;
+      }
     }
-    @media (hover: none) {
-      .orp-reveal { opacity: 1; transform: none; pointer-events: auto; }
-      .orp-foot   { flex-wrap: wrap; }
+    .orp-reveal:hover { background: rgba(13,148,136,0.07); color: #0d9488; border-color: rgba(13,148,136,0.22); }
+
+    /* ── Pagination ── */
+    .orp-pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin-top: 32px;
     }
-    .orp-reveal:hover { background: rgba(13,148,136,0.07) !important; color: #0d9488 !important; border-color: rgba(13,148,136,0.25) !important; }
-
-    /* Filter chips */
-    .orp-chip { transition: all 0.15s; }
-    .orp-chip:hover { background: rgba(13,148,136,0.07) !important; color: #0d9488 !important; border-color: rgba(13,148,136,0.22) !important; }
-
-    /* Back button */
-    .orp-back { transition: all 0.18s; }
-    .orp-back:hover { background: #0f172a !important; color: #fff !important; border-color: #0f172a !important; }
-
-    /* Head row click */
-    .orp-head { transition: background 0.15s; }
-    .orp-head:active { background: #f0fdfa !important; }
-
-    /* Scrollbar hide */
-    .orp-filters::-webkit-scrollbar { display: none; }
-
-    .ph-pagination {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          gap: 10px;
-          margin-top: 32px;
-        }
-
-        .ph-page-btn {
-          font-family: 'Outfit', sans-serif;
-          font-size: 0.8rem;
-          font-weight: 600;
-          padding: 9px 20px;
-          border-radius: 12px;
-          border: 1px solid rgba(226,232,240,0.9);
-          background: #ffffff;
-          color: #475569;
-          cursor: pointer;
-          transition: all 0.18s ease;
-          letter-spacing: 0.01em;
-          box-shadow: 0 1px 4px rgba(15,23,42,0.05);
-        }
-        .ph-page-btn:hover:not(:disabled) {
-          border-color: rgba(13,148,136,0.3);
-          color: #0d9488;
-          background: #f0fdfa;
-          box-shadow: 0 4px 12px -4px rgba(13,148,136,0.18);
-        }
-        .ph-page-btn:disabled {
-          opacity: 0.38;
-          cursor: not-allowed;
-        }
-
-        .ph-page-indicator {
-          font-family: 'Outfit', sans-serif;
-          font-size: 0.8rem;
-          font-weight: 600;
-          padding: 9px 18px;
-          border-radius: 12px;
-          background: rgba(13,148,136,0.07);
-          border: 1px solid rgba(13,148,136,0.18);
-          color: #0f766e;
-          min-width: 90px;
-          text-align: center;
-          letter-spacing: 0.01em;
-        }
-
+    .orp-page-btn {
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 9px 20px;
+      border-radius: 12px;
+      border: 1px solid rgba(226,232,240,0.9);
+      background: #ffffff;
+      color: #475569;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      letter-spacing: 0.01em;
+      box-shadow: 0 1px 4px rgba(15,23,42,0.05);
+    }
+    .orp-page-btn:hover:not(:disabled) {
+      border-color: rgba(13,148,136,0.3);
+      color: #0d9488;
+      background: #f0fdfa;
+      box-shadow: 0 4px 12px -4px rgba(13,148,136,0.18);
+    }
+    .orp-page-btn:disabled { opacity: 0.38; cursor: not-allowed; }
+    .orp-page-indicator {
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 9px 18px;
+      border-radius: 12px;
+      background: rgba(13,148,136,0.07);
+      border: 1px solid rgba(13,148,136,0.18);
+      color: #0f766e;
+      min-width: 90px;
+      text-align: center;
+      letter-spacing: 0.01em;
+    }
+    @media (max-width: 400px) {
+      .orp-page-btn { padding: 8px 14px; font-size: 0.75rem; }
+      .orp-page-indicator { min-width: 72px; padding: 8px 10px; font-size: 0.75rem; }
+    }
   `;
   document.head.appendChild(el);
 }
@@ -126,7 +303,6 @@ const T = {
   ink: "#0f172a", inkLight: "#64748b", inkFaint: "#94a3b8",
   teal: "#0d9488", tealLight: "rgba(13,148,136,0.07)", tealBorder: "rgba(13,148,136,0.22)",
   border: "rgba(226,232,240,0.9)", borderMid: "rgba(203,213,225,0.9)",
-  bg: "#f8fafc",
 };
 
 const STATUS = {
@@ -220,42 +396,24 @@ const OrderCard = ({ order }) => {
       <div
         className="orp-head"
         onClick={() => setOpen((o) => !o)}
-        style={{
-          padding: "14px 18px",
-          display: "flex", alignItems: "center", gap: 10,
-          cursor: "pointer", background: "#fafafa",
-          borderBottom: open ? `1px solid ${T.border}` : "1px solid transparent",
-          userSelect: "none", WebkitTapHighlightColor: "transparent",
-          minHeight: 58,
-        }}
+        style={{ borderBottom: open ? `1px solid ${T.border}` : "1px solid transparent" }}
       >
+        {/* Left: id + meta */}
         <div style={{ flex: 1, minWidth: 0 }}>
-          <p style={{
-            fontFamily: "'Outfit', sans-serif", fontSize: 13, fontWeight: 700,
-            color: T.ink, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", margin: 0,
-          }}>
-            {displayId}
-          </p>
-          <p style={{
-            fontFamily: "'Outfit', sans-serif", fontSize: 11.5, color: T.inkFaint, margin: "2px 0 0",
-          }}>
+          <p className="orp-order-id">{displayId}</p>
+          <p className="orp-order-meta">
             {fmtDate(order.createdAt)} · {order.items.length} item{order.items.length !== 1 ? "s" : ""}
           </p>
         </div>
 
         <StatusBadge status={order.status} />
 
-        <span style={{
-          fontFamily: "'Lora', serif", fontWeight: 700,
-          fontSize: "1.15rem", color: T.ink, flexShrink: 0, paddingLeft: 8,
-        }}>
-          {fmtAmt(order.amount)}
-        </span>
+        <span className="orp-amount">{fmtAmt(order.amount)}</span>
 
         <svg
           width="14" height="14" viewBox="0 0 24 24" fill="none"
           stroke={T.inkFaint} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-          style={{ flexShrink: 0, marginLeft: 4, transition: "transform 0.25s", transform: open ? "rotate(180deg)" : "none" }}
+          style={{ flexShrink: 0, marginLeft: 2, transition: "transform 0.25s", transform: open ? "rotate(180deg)" : "none" }}
         >
           <path d="M6 9l6 6 6-6" />
         </svg>
@@ -263,7 +421,7 @@ const OrderCard = ({ order }) => {
 
       {/* ── Expanded items ── */}
       {open && (
-        <div style={{ padding: "10px 18px 4px" }}>
+        <div style={{ padding: "10px 16px 4px" }}>
           {order.items.map((item, idx) => (
             <div
               key={item.product}
@@ -274,7 +432,7 @@ const OrderCard = ({ order }) => {
               }}
             >
               <div style={{
-                width: 46, height: 46, borderRadius: 10, flexShrink: 0,
+                width: 44, height: 44, borderRadius: 10, flexShrink: 0,
                 background: "linear-gradient(145deg, #f8fafa, #f0fdfa)",
                 border: `1px solid ${T.border}`,
                 display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden",
@@ -286,7 +444,7 @@ const OrderCard = ({ order }) => {
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <p style={{
-                  fontFamily: "'Lora', serif", fontWeight: 600, fontSize: 14.5,
+                  fontFamily: "'Lora', serif", fontWeight: 600, fontSize: 14,
                   color: T.ink, margin: 0,
                   whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
                 }}>
@@ -311,14 +469,7 @@ const OrderCard = ({ order }) => {
       )}
 
       {/* ── Footer ── */}
-      <div
-        className="orp-foot"
-        style={{
-          padding: "10px 18px", display: "flex",
-          alignItems: "center", justifyContent: "space-between", gap: 12,
-          background: "#fafafa", borderTop: `1px solid ${T.border}`,
-        }}
-      >
+      <div className="orp-foot">
         <div style={{ minWidth: 0, flex: 1 }}>
           <p style={{
             fontFamily: "'Outfit', sans-serif", fontSize: 11.5,
@@ -333,17 +484,7 @@ const OrderCard = ({ order }) => {
             </p>
           )}
         </div>
-        <button
-          className="orp-reveal"
-          onClick={handleBtn}
-          style={{
-            flexShrink: 0, height: 34, padding: "0 14px", borderRadius: 9,
-            border: `1px solid ${T.borderMid}`, background: "transparent",
-            color: T.inkLight, fontFamily: "'Outfit', sans-serif",
-            fontSize: 12, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap",
-            WebkitTapHighlightColor: "transparent",
-          }}
-        >
+        <button className="orp-reveal" onClick={handleBtn}>
           {btnLabel}
         </button>
       </div>
@@ -360,18 +501,18 @@ const OrderCard = ({ order }) => {
 
 // ─── Main Page ─────────────────────────────────────────────────────────────────
 const OrdersPage = () => {
-  const [orders, setOrders]   = useState([]);
-  const [stats, setstats] = useState({})
-  const [filter, setFilter]   = useState("all");
-  const [loading, setLoading] = useState(true);
-  const [error, setError]     = useState(false);
+  const [orders, setOrders]     = useState([]);
+  const [stats, setstats]       = useState({});
+  const [filter, setFilter]     = useState("all");
+  const [loading, setLoading]   = useState(true);
+  const [error, setError]       = useState(false);
   const [customer, setCustomer] = useState({});
-  const [total, settotal] = useState(0)
-  const [page, setpage] = useState(1);
-  const navigate  = useNavigate();
+  const [total, settotal]       = useState(0);
+  const [page, setpage]         = useState(1);
+  const navigate   = useNavigate();
   const { userid } = useParams();
   const isAdminView = !!userid;
-  const per_page=5;
+  const per_page = 5;
 
   useEffect(() => {
     if (!userid) return;
@@ -382,14 +523,12 @@ const OrdersPage = () => {
         if (!res?.ok) { console.log(result.message); return; }
         setCustomer(result.user);
         setOrders(result.user.userorders);
-        settotal(result.totalDocuments)
-        setstats(result.stats)
-                console.log(result.stats)
-
+        settotal(result.totalDocuments);
+        setstats(result.stats);
       } catch (error) { console.log(error); }
       finally { setLoading(false); }
     })();
-  }, [userid,page,filter]);
+  }, [userid, page, filter]);
 
   useEffect(() => {
     if (userid) return;
@@ -402,50 +541,25 @@ const OrdersPage = () => {
         const data = await res.json();
         if (!res.ok) console.error("Orders fetch failed:", data);
         setOrders(data.order || []);
-        settotal(data.totalorders)
-        setstats(data.stats)
-        console.log(data.stats)
+        settotal(data.totalorders);
+        setstats(data.stats);
       } catch (err) { console.error(err); setError(true); }
       finally { setLoading(false); }
     })();
-  }, [page,filter]);
-
+  }, [page, filter]);
 
   const filtered = filter === "all" ? orders : orders.filter((o) => o.status === filter);
-
-  // const stats = {
-  //   total:   orders.length,
-  //   paid:    orders.filter((o) => o.status === "paid").length ,
-  //   pending: orders.filter((o) => o.status === "pending").length,
-  //   spent:   orders.filter((o) => o.status === "paid").reduce((s, o) => s + o.amount, 0),
-  // };
-
-const totalpages=Math.ceil(total/per_page);
+  const totalpages = Math.ceil(total / per_page);
 
   return (
-
-    <div style={{ width: "min(1140px, 97%)", margin: "0 auto" }}>
+    <div className="orp-root">
       <Navbar />
 
-      <div style={{
-        marginTop: 20,
-        background: "#fff",
-        borderRadius: 22,
-        border: `1px solid ${T.border}`,
-        boxShadow: "0 4px 32px -8px rgba(15,23,42,0.08)",
-        overflow: "hidden",
-      }}>
+      <div className="orp-shell">
         {/* ── Header band ── */}
-        <div
-          className="orp-hband"
-          style={{
-            background: "#fafafa",
-            borderBottom: `1px solid ${T.border}`,
-            padding: "28px 32px 24px",
-          }}
-        >
+        <div className="orp-hband">
           {/* Title + back */}
-          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+          <div className="orp-title-row">
             <div>
               <p style={{
                 fontFamily: "'Outfit', sans-serif", fontSize: 10.5, fontWeight: 700,
@@ -457,7 +571,7 @@ const totalpages=Math.ceil(total/per_page);
               </p>
               <h1 style={{
                 fontFamily: "'Lora', serif", fontWeight: 700,
-                fontSize: "1.85rem", letterSpacing: "-0.03em",
+                fontSize: "clamp(1.4rem, 4vw, 1.85rem)", letterSpacing: "-0.03em",
                 color: T.ink, lineHeight: 1.1, margin: "0 0 5px",
               }}>
                 {isAdminView ? "Customer Orders" : "My Orders"}
@@ -472,14 +586,6 @@ const totalpages=Math.ceil(total/per_page);
             <button
               className="orp-back"
               onClick={isAdminView ? () => navigate(-1) : () => navigate("/user/products")}
-              style={{
-                display: "inline-flex", alignItems: "center", gap: 7,
-                padding: "0 16px", height: 36, borderRadius: 10,
-                border: `1px solid ${T.borderMid}`, background: "transparent",
-                color: T.inkLight, fontFamily: "'Outfit', sans-serif",
-                fontSize: 12.5, fontWeight: 600, cursor: "pointer", flexShrink: 0,
-                WebkitTapHighlightColor: "transparent",
-              }}
             >
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -490,18 +596,14 @@ const totalpages=Math.ceil(total/per_page);
           </div>
 
           {/* Stats */}
-          <div className="orp-stats-grid" style={{ marginTop: 20 }}>
+          <div className="orp-stats-grid">
             {[
-              { label: "Total orders", val: stats?.totalorders||0,                                 color: T.ink },
-              { label: "Paid",         val: stats?.paidorders||0,                                  color: T.teal },
-              { label: "Pending",      val: stats?.pendingorders ||0,                               color: "#d97706" },
-              { label: "Total spent",  val: `₹${(stats?.totalspent||0).toLocaleString("en-IN")}`,  color: T.ink },
+              { label: "Total orders", val: stats?.totalorders || 0,                                color: T.ink },
+              { label: "Paid",         val: stats?.paidorders || 0,                                 color: T.teal },
+              { label: "Pending",      val: stats?.pendingorders || 0,                              color: "#d97706" },
+              { label: "Total spent",  val: `₹${(stats?.totalspent || 0).toLocaleString("en-IN")}`, color: T.ink },
             ].map(({ label, val, color }) => (
-              <div key={label} style={{
-                background: "rgba(248,250,252,0.8)",
-                border: `1px solid ${T.border}`,
-                borderRadius: 13, padding: "12px 16px",
-              }}>
+              <div key={label} className="orp-stat-tile">
                 <p style={{
                   fontFamily: "'Outfit', sans-serif", fontSize: 10, fontWeight: 600,
                   textTransform: "uppercase", letterSpacing: "0.07em",
@@ -511,7 +613,7 @@ const totalpages=Math.ceil(total/per_page);
                 </p>
                 <p style={{
                   fontFamily: "'Lora', serif", fontWeight: 700,
-                  fontSize: "1.4rem", color, margin: 0,
+                  fontSize: "clamp(1.1rem, 3vw, 1.4rem)", color, margin: 0,
                 }}>
                   {val}
                 </p>
@@ -521,30 +623,18 @@ const totalpages=Math.ceil(total/per_page);
         </div>
 
         {/* ── Body ── */}
-        <div className="orp-body" style={{ padding: "20px 32px 28px" }}>
+        <div className="orp-body">
           {/* Filter chips */}
-          <div
-            className="orp-filters"
-            style={{
-              display: "flex", gap: 8, marginBottom: 18,
-              overflowX: "auto", scrollbarWidth: "none",
-              WebkitOverflowScrolling: "touch", paddingBottom: 2,
-            }}
-          >
+          <div className="orp-filters">
             {["all", "paid", "pending"].map((f) => (
               <button
                 key={f}
                 className="orp-chip"
-                onClick={() => {setFilter(f),setpage(1)}}
+                onClick={() => { setFilter(f); setpage(1); }}
                 style={{
-                  padding: "5px 16px", borderRadius: 20,
-                  fontSize: 12, fontWeight: 600,
-                  cursor: "pointer", flexShrink: 0, minHeight: 32,
-                  fontFamily: "'Outfit', sans-serif", textTransform: "capitalize",
                   border: filter === f ? `1px solid ${T.tealBorder}` : `1px solid ${T.borderMid}`,
                   background: filter === f ? T.tealLight : "transparent",
                   color: filter === f ? T.teal : T.inkLight,
-                  WebkitTapHighlightColor: "transparent",
                 }}
               >
                 {f}
@@ -578,33 +668,27 @@ const totalpages=Math.ceil(total/per_page);
             <OrderCard key={order._id} order={order} />
           ))}
 
-
-<div className="ph-pagination">
-              <button
-                className="ph-page-btn"
-                disabled={page === 1}
-                onClick={() => setpage(page - 1)}
-              >
-                ← Prev
-              </button>
-
-              <span className="ph-page-indicator">
-                Page {page} / {totalpages || 1}
-              </span>
-
-              <button
-                className="ph-page-btn"
-                disabled={page === totalpages}
-                onClick={() => setpage(page + 1)}
-              >
-                Next →
-              </button>
-            </div>
-
+          {/* Pagination */}
+          <div className="orp-pagination">
+            <button
+              className="orp-page-btn"
+              disabled={page === 1}
+              onClick={() => setpage(page - 1)}
+            >
+              ← Prev
+            </button>
+            <span className="orp-page-indicator">
+              Page {page} / {totalpages || 1}
+            </span>
+            <button
+              className="orp-page-btn"
+              disabled={page === totalpages}
+              onClick={() => setpage(page + 1)}
+            >
+              Next →
+            </button>
+          </div>
         </div>
-
- 
-
       </div>
 
       <Snackbar open={error} autoHideDuration={3000} onClose={() => setError(false)}
@@ -613,8 +697,6 @@ const totalpages=Math.ceil(total/per_page);
           Failed to load orders
         </Alert>
       </Snackbar>
-
-      
     </div>
   );
 };
