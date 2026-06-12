@@ -1,6 +1,7 @@
 // ProfilePage.jsx — fully responsive (mobile drawer + fluid grids)
 
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 // ─── Global styles injection ───────────────────────────────────────────────────
 if (!document.getElementById("pp-styles")) {
@@ -331,17 +332,17 @@ function StatusChip({ status }) {
 // ─── NAV items ─────────────────────────────────────────────────────────
 const NAV_ITEMS = [
   { key: "profile",       label: "Profile"       },
-  { key: "orders",        label: "Orders"        },
-  { key: "wishlist",      label: "Wishlist"      },
+  { key: "orderswish",        label: "Orders & Wishlist"        },
   { key: "addresses",     label: "Addresses"     },
-  { key: "notifications", label: "Notifications" },
   { key: "security",      label: "Security"      },
 ];
 
 // ─── Sidebar inner content (shared between desktop + drawer) ──────────
 function SidebarContent({ user, activeNav, onNav, onSignOut, onClose }) {
-  const { firstName = "—", lastName = "—", email = "—", memberTier } = user;
+  const { firstName = "—", lastName = "—", email = "—", tier } = user; // object destructuring hoti hai
   const initials = `${firstName[0] ?? ""}${lastName[0] ?? ""}`.toUpperCase();
+
+  const navigate=useNavigate();
 
   return (
     <>
@@ -394,14 +395,14 @@ function SidebarContent({ user, activeNav, onNav, onSignOut, onClose }) {
         }}>
           {email}
         </div>
-        {memberTier && (
+        {tier && (
           <span style={{
             display: "inline-flex", alignItems: "center", gap: 4,
             marginTop: 10, padding: "3px 10px",
             background: T.tealLight, color: T.tealDark,
             borderRadius: 100, fontSize: 11, fontWeight: 500,
           }}>
-            ★ {memberTier}
+            ★ {tier}
           </span>
         )}
       </div>
@@ -438,18 +439,32 @@ function SidebarContent({ user, activeNav, onNav, onSignOut, onClose }) {
       <div style={{ padding: "1rem 1.5rem", borderTop: `0.5px solid ${T.border}` }}>
         <button
           className="pp-signout-btn"
-          onClick={onSignOut}
-          style={{
-            width: "100%", display: "flex", alignItems: "center", gap: 8,
-            padding: "10px 12px", borderRadius: 8,
-            border: `0.5px solid rgba(163,45,45,0.4)`,
-            background: "transparent", color: "#A32D2D",
-            fontSize: 12, cursor: "pointer", fontFamily: "inherit",
-            minHeight: 40,
-            WebkitTapHighlightColor: "transparent",
-          }}
+          onClick={()=>navigate(-1)}
+         style={{
+    width: "100%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    padding: "12px 16px",
+
+    borderRadius: 12,
+    border: `1px solid ${T.border}`,
+
+    background: T.card,
+    color: T.text,
+
+    fontSize: 13,
+    fontWeight: 600,
+
+    boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
+
+    cursor: "pointer",
+    fontFamily: "inherit",
+    transition: "all 0.2s ease",
+  }}
         >
-          ← Sign out
+          ← Back to Store
         </button>
       </div>
     </>
@@ -457,8 +472,7 @@ function SidebarContent({ user, activeNav, onNav, onSignOut, onClose }) {
 }
 
 // ─── Main export ──────────────────────────────────────────────────────
-export default function ProfilePage({
-  user = {},
+export default function ProfilePage({  // ye function({}){} is type ka hai isme argument object hai ek
   stats = {},
   addresses = [],
   recentOrders = [],
@@ -474,6 +488,39 @@ export default function ProfilePage({
 }) {
   const [activeNav, setActiveNav] = useState("profile");
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [user, setuser] = useState({})
+
+  const getuserdata=async ()=>{
+    try {
+      const token=localStorage.getItem("CommerceToken")
+      if(!token)
+      {
+        console.log("Token not present")
+        return;
+      }
+
+      const res=await fetch(`${import.meta.env.VITE_API_URL}/api/users/getSingleUser`,{
+        method: "GET",
+         headers: { "Content-Type": "application/json",Authorization: `Bearer ${token}` },
+      })
+    
+      const result=await res.json();
+      if(!res?.ok){
+        console.log(result);
+        return;
+      }
+      console.log(result)
+      setuser(result.data)
+
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+useEffect(() => {
+  getuserdata()
+}, [])
+
 
   // Prevent body scroll when drawer open
   useEffect(() => {
@@ -482,15 +529,19 @@ export default function ProfilePage({
   }, [drawerOpen]);
 
   const {
-    firstName = "—", lastName = "—",
-    email = "—", phone = "—",
-    gender = "—", dob = "—",
-    joinedDate = "—", memberTier,
+    name,
+    email = "—", phoneNumber = "—",
+    city = "—",
+    createdAt = "—", tier,
   } = user;
+  const firstName=name?.split(" ")[0];
+  const lastName=name?.split(" ").slice(1).join(" ")
 
   const {
-    totalOrders = 0,
-    totalSpent = "—",
+    totalOrders = user?.totalorder,
+    totalSpent = user.orders?.reduce((sum,order)=>{
+      return order.status==="paid"?sum+order.amount:sum;
+    },0),
     wishlisted = 0,
     reviews = 0,
   } = stats;
@@ -501,6 +552,20 @@ export default function ProfilePage({
     { label: "Two-factor auth",     desc: "Extra security on login",        on: false },
     { label: "Promotional emails",  desc: "Sales and new arrivals",         on: true  },
   ];
+
+  const formatDate = (date) => {
+  return new Date(date).toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+};
+
+const formatAmount = (amount) => {
+  if (amount >= 100000) return `₹${+(amount / 100000).toFixed(1)}L`;
+  if (amount >= 1000) return `₹${+(amount / 1000).toFixed(1)}K`;
+  return `₹${amount}`;
+};
 
   return (
     <div style={{
@@ -552,7 +617,7 @@ export default function ProfilePage({
         <aside className={`pp-sidebar${drawerOpen ? " open" : ""}`}
           style={{ display: "flex", flexDirection: "column" }}>
           <SidebarContent
-            user={{ firstName, lastName, email, memberTier }}
+            user={{ firstName, lastName, email, tier }}
             activeNav={activeNav}
             onNav={setActiveNav}
             onSignOut={onSignOut}
@@ -567,9 +632,9 @@ export default function ProfilePage({
           <div className="pp-page-heading" style={{ display: undefined }}>
             <div style={{ minWidth: 0 }}>
               <div style={{ fontSize: 18, fontWeight: 500, color: T.text }}>My Profile</div>
-              <div style={{ fontSize: 13, color: T.muted, marginTop: 2 }}>Member since {joinedDate}</div>
+              <div style={{ fontSize: 13, color: T.muted, marginTop: 2 }}>Member since {formatDate(createdAt)}</div>
             </div>
-            <button
+            {/* <button
               className="pp-edit-btn"
               onClick={onEditProfile}
               style={{
@@ -582,19 +647,19 @@ export default function ProfilePage({
               }}
             >
               ✎ Edit profile
-            </button>
+            </button> */}
           </div>
 
           {/* Stats row */}
           <div className="pp-stats-grid">
             <StatCard value={totalOrders} label="Orders placed" />
-            <StatCard value={totalSpent}  label="Total spent"   />
+            <StatCard value={formatAmount(totalSpent)}  label="Total spent"   />
             <StatCard value={wishlisted}  label="Wishlisted"    />
             <StatCard value={reviews}     label="Reviews given" />
           </div>
 
           {/* Row 1 — Personal info + Preferences */}
-          <div className="pp-row-2">
+       { activeNav==="profile" &&  <div className="pp-row-2">
 
             {/* Personal info */}
             <Card>
@@ -606,9 +671,9 @@ export default function ProfilePage({
                 <Field label="First name"    value={firstName} />
                 <Field label="Last name"     value={lastName}  />
                 <Field label="Email"         value={email}     fullWidth />
-                <Field label="Phone"         value={phone}     />
-                <Field label="Gender"        value={gender}    />
-                <Field label="Date of birth" value={dob}       fullWidth />
+                <Field label="Phone"         value={phoneNumber}     />
+                <Field label="City"        value={city}    />
+               
               </div>
             </Card>
 
@@ -642,10 +707,10 @@ export default function ProfilePage({
                 }}>›</button>
               </div>
             </Card>
-          </div>
+          </div> }
 
           {/* Row 2 — Orders + Wishlist */}
-          <div className="pp-row-2">
+        { activeNav==="orderswish"&&  <div className="pp-row-2">
 
             {/* Recent orders */}
             <Card>
@@ -725,10 +790,10 @@ export default function ProfilePage({
                 )}
               </div>
             </Card>
-          </div>
+          </div>}
 
           {/* Address book */}
-          <Card style={{ marginBottom: "1.25rem" }}>
+        { activeNav==="addresses" &&  <Card style={{ marginBottom: "1.25rem" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1rem", gap: 8 }}>
               <CardTitle icon="📍">Address book</CardTitle>
               <LinkBtn onClick={onAddAddress}>+ Add new</LinkBtn>
@@ -785,10 +850,10 @@ export default function ProfilePage({
                 <span style={{ fontSize: 22 }}>+</span> Add address
               </button>
             </div>
-          </Card>
+          </Card> }
 
           {/* Danger zone */}
-          <div style={{
+         { activeNav==="security" && <div style={{
             background: "rgba(252,235,235,0.6)", border: "0.5px solid #F7C1C1",
             borderRadius: 12, padding: "1.25rem 1.5rem",
           }}>
@@ -827,7 +892,7 @@ export default function ProfilePage({
                 </button>
               </div>
             ))}
-          </div>
+          </div> }
 
           {/* Bottom breathing room on mobile */}
           <div style={{ height: 32 }} />
