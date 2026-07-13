@@ -76,4 +76,28 @@ npm run build
 npm run preview
 ```
 
-## 📁 Project Structure
+## 📂 Project Structure
+
+```text
+frontend/
+├── public/
+├── src/
+│   ├── assets/
+│   ├── components/
+│   ├── images/
+│   ├── pages/
+│   ├── utils/
+│   ├── App.css
+│   ├── App.jsx
+│   ├── index.css
+│   ├── main.jsx
+│   └── theme.js
+├── .env
+├── .gitignore
+├── eslint.config.js
+├── index.html
+├── package.json
+├── package-lock.json
+├── vercel.json
+└── vite.config.js
+```
