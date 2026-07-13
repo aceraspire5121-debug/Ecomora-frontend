@@ -2,7 +2,7 @@
 
 A full-featured e-commerce web app built with React + Vite. Covers the complete shopping flow — browse, search, cart, checkout, order history — plus a dedicated admin panel for managing products, orders, and customers.
 
-**🔗 Live:** https://comora-frontend.vercel.app
+**🔗 Live:** https://ecomora-frontend.vercel.app
 
 ---
 
