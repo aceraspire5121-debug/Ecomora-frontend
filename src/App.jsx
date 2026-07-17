@@ -15,6 +15,7 @@ import OrdersPage from "./pages/Order";
 import AdminDashboard from "./pages/Dashboard";
 import UsersPage from "./pages/UserPage";
 import Profile from "./pages/Profile";
+import VerifyEmailPage from "./pages/VerifyEmail";
 function App() {
   return (
     <BrowserRouter>
@@ -23,6 +24,7 @@ function App() {
         <Route path="/" element={<RegisterPage />} />
         <Route path="/reset" element={<ResetPassword />} />
         <Route path="/reset-password/:token" element={<NewPassword />} />
+         <Route path="/verify-email" element={<VerifyEmailPage/>} />
         <Route path="/user/products" element={<ProtectedRoute><ProductPage/></ProtectedRoute>} />
         <Route path={"/admin/products"} element={<ProtectedRoute><AdminPage/></ProtectedRoute>} />
         <Route path={"/admin/products/newProduct"} element={<ProtectedRoute><AddProduct/></ProtectedRoute>} />
