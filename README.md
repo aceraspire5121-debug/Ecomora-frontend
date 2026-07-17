@@ -1,8 +1,8 @@
 # 🛒 Ecomora — Frontend
 
-A full-featured e-commerce web app built with React + Vite. Covers the complete shopping flow — browse, search, cart, checkout, order history — plus a dedicated admin panel for managing products, orders, and customers.
+Ecomora is a modern, full-stack e-commerce application featuring secure JWT authentication, responsive user and admin dashboards, product management, order processing, and seamless REST API integration. This repository contains the React frontend built with Vite.
 
-**🔗 Live:** https://comora-frontend.vercel.app
+**🔗 Live:** https://ecomora-frontend.vercel.app
 
 ---
 
@@ -76,4 +76,28 @@ npm run build
 npm run preview
 ```
 
-## 📁 Project Structure
+## 📂 Project Structure
+
+```text
+frontend/
+├── public/
+├── src/
+│   ├── assets/
+│   ├── components/
+│   ├── images/
+│   ├── pages/
+│   ├── utils/
+│   ├── App.css
+│   ├── App.jsx
+│   ├── index.css
+│   ├── main.jsx
+│   └── theme.js
+├── .env
+├── .gitignore
+├── eslint.config.js
+├── index.html
+├── package.json
+├── package-lock.json
+├── vercel.json
+└── vite.config.js
+```
