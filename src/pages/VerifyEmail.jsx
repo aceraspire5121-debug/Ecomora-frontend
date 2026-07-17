@@ -287,7 +287,7 @@ const VerifyEmailPage = () => {
               }}
             >
               <Link
-                to="/"
+                to="/login"
                 style={{
                   color: "#0f766e",
                   fontWeight: 600,
@@ -295,7 +295,7 @@ const VerifyEmailPage = () => {
                   letterSpacing: "0.02em",
                 }}
               >
-                ← Back to Register
+                ← Back to Login
               </Link>
             </Typography>
           </Box>
