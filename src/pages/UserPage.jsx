@@ -343,14 +343,14 @@ const fmtDate = (d) => new Date(d).toLocaleDateString("en-IN", { day: "2-digit",
 
 // ─── Tier Config ─────────────────────────────────────────────────────────────
 const TIER_CONFIG = {
-    Bronze:   { bg: "#fef3c7", color: "#92400e",  icon: "🥉" },
-    Silver:   { bg: "#f1f5f9", color: "#475569",  icon: "🥈" },
-    Gold:     { bg: "#fefce8", color: "#854d0e",  icon: "🥇" },
-    Platinum: { bg: "#f0fdfa", color: "#0f766e",  icon: "💎" },
+    Bronze: { bg: "#fef3c7", color: "#92400e", icon: "🥉" },
+    Silver: { bg: "#f1f5f9", color: "#475569", icon: "🥈" },
+    Gold: { bg: "#fefce8", color: "#854d0e", icon: "🥇" },
+    Platinum: { bg: "#f0fdfa", color: "#0f766e", icon: "💎" },
 };
 
 const STATUS_CONFIG = {
-    Active:   { bg: "#f0fdfa", color: "#0f766e", dot: "#0d9488", border: "rgba(13,148,136,0.2)" },
+    Active: { bg: "#f0fdfa", color: "#0f766e", dot: "#0d9488", border: "rgba(13,148,136,0.2)" },
     Inactive: { bg: "#f8fafc", color: "#64748b", dot: "#94a3b8", border: "rgba(148,163,184,0.25)" },
 };
 
@@ -392,14 +392,14 @@ const CustomerDrawer = ({ customer, onClose }) => {
     const navigate = useNavigate();
 
     const avatarStyle = customer ? getAvatarColor(customer.name || "") : {};
-    const tier   = customer ? (TIER_CONFIG[customer.tier]   || TIER_CONFIG.Bronze)   : {};
+    const tier = customer ? (TIER_CONFIG[customer.tier] || TIER_CONFIG.Bronze) : {};
     const status = customer ? (STATUS_CONFIG[customer.status] || STATUS_CONFIG.Inactive) : {};
     const { bg, color } = avatarStyle;
 
     const ORDER_STATUS = {
-        Paid:    { bg: "#f0fdfa", color: "#0f766e", dot: "#0d9488" },
+        Paid: { bg: "#f0fdfa", color: "#0f766e", dot: "#0d9488" },
         Pending: { bg: "#fffbeb", color: "#92400e", dot: "#d97706" },
-        Failed:  { bg: "#fff1f2", color: "#be123c", dot: "#ef4444" },
+        Failed: { bg: "#fff1f2", color: "#be123c", dot: "#ef4444" },
     };
 
     return (
@@ -452,9 +452,9 @@ const CustomerDrawer = ({ customer, onClose }) => {
                                 Contact & Info
                             </p>
                             {[
-                                ["📱", "Phone",       customer.phoneNumber],
-                                ["📍", "City",        customer.city],
-                                ["📅", "Joined",      fmtDate(customer.createdAt)],
+                                ["📱", "Phone", customer.phoneNumber],
+                                ["📍", "City", customer.city],
+                                ["📅", "Joined", fmtDate(customer.createdAt)],
                                 ["🕐", "Last Active", fmtDate(customer.lastActivity)],
                             ].map(([icon, label, val]) => (
                                 <div key={label} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
@@ -486,10 +486,10 @@ const CustomerDrawer = ({ customer, onClose }) => {
                             </p>
                             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                                 {[
-                                    ["Total Spend",   fmtAmount(customer.totalSpent)],
-                                    ["Total Orders",  customer.totalOrders],
-                                    ["Avg Order",     fmtAmount(customer.avgOrder)],
-                                    ["Tier",          customer.tier],
+                                    ["Total Spend", fmtAmount(customer.totalSpent)],
+                                    ["Total Orders", customer.totalOrders],
+                                    ["Avg Order", fmtAmount(customer.avgOrder)],
+                                    ["Tier", customer.tier],
                                 ].map(([label, val]) => (
                                     <div
                                         key={label}
@@ -593,8 +593,8 @@ const CustomerDrawer = ({ customer, onClose }) => {
                             </p>
                             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                                 {[
-                                    { label: "✉️ Send Email",   bg: "#eff6ff", color: "#1d4ed8" },
-                                    { label: "🚫 Deactivate",   bg: "#fff1f2", color: "#be123c" },
+                                    { label: "✉️ Send Email", bg: "#eff6ff", color: "#1d4ed8" },
+                                    { label: "🚫 Deactivate", bg: "#fff1f2", color: "#be123c" },
                                     { label: "🔝 Upgrade Tier", bg: "#f0fdfa", color: "#0f766e" },
                                 ].map(({ label, bg: btnBg, color: btnColor }) => (
                                     <button
@@ -656,6 +656,7 @@ const CustomersPage = () => {
 
     const fetchCustomers = async () => {
         try {
+            setloading(true)
             const token = localStorage.getItem("CommerceToken")
             const res = await fetch(`${import.meta.env.VITE_API_URL}/api/customers/getAllCustomers?page=${page}&limit=${PER_PAGE}&status=${filterStatus}&tier=${filterTier}`, {
                 headers: {
@@ -742,10 +743,10 @@ const CustomersPage = () => {
 
                 {/* Stats */}
                 <div className="cust-stats-grid">
-                    <StatCard accent="teal"  icon="👥" title="Total Customers"  value={total}       sub={`${totalActive} active`} />
-                    <StatCard accent="amber" icon="✅" title="Active"           value={totalActive} sub="currently active" />
-                    <StatCard accent="blue"  icon="🆕" title="New This Month"   value={neww}        sub="joined recently" />
-                    <StatCard accent="rose"  icon="📊" title="Avg Order Value"  value={avgOrder}    sub="across all orders" />
+                    <StatCard accent="teal" icon="👥" title="Total Customers" value={total} sub={`${totalActive} active`} />
+                    <StatCard accent="amber" icon="✅" title="Active" value={totalActive} sub="currently active" />
+                    <StatCard accent="blue" icon="🆕" title="New This Month" value={neww} sub="joined recently" />
+                    <StatCard accent="rose" icon="📊" title="Avg Order Value" value={avgOrder} sub="across all orders" />
                 </div>
 
                 {/* Table Panel */}
@@ -821,72 +822,82 @@ const CustomersPage = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {customers.length === 0
+                                {loading
                                     ? <tr>
                                         <td colSpan="100%" style={{
                                             textAlign: "center", padding: "48px",
                                             fontFamily: "'Outfit', sans-serif",
                                             fontSize: 13, color: T.faint,
                                         }}>
-                                            No customers to display at the moment.
+                                            Loading customers…
                                         </td>
                                     </tr>
-                                    : customers.map((c) => { // empty array par hamara map allowed hota hai , isliye array me koi issue nhi aata
-                                        const { bg, color } = getAvatarColor(c.name || "");
-                                        const tier   = TIER_CONFIG[c.tier]   || { bg: "#fef3c7", color: "#92400e", icon: "🥉" }; // ye object se value access kar rahe hai by giving key TIER_CONFIG["Gold"], gold as a key paas kardi TIER_CONFIG OBJECT ME, key kyoki dynamic hai to hame ye notation use karna padega dot notation ki jagah
-                                        const status = STATUS_CONFIG[c.status] || STATUS_CONFIG.Inactive;
-                                        return (
-                                            <tr key={c._id} onClick={() => setSelected(c)}>  {/** ispr click karne se selected ke andar customer dal de rahe hai */}
-                                                <td>
-                                                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                                                        <div className="cust-avatar" style={{ background: bg, color }}>{getInitials(c.name)}</div>
-                                                        <div>
-                                                            <p style={{
-                                                                fontFamily: "'Outfit', sans-serif",
-                                                                fontSize: 13, fontWeight: 600, color: T.text, margin: 0,
-                                                            }}>
-                                                                {c.name}
-                                                            </p>
-                                                            <p style={{
-                                                                fontFamily: "'Outfit', sans-serif",
-                                                                fontSize: 11, color: T.faint, marginTop: 1, marginBottom: 0,
-                                                            }}>
-                                                                {c.email}
-                                                            </p>
+                                    : customers.length === 0
+                                        ? <tr>
+                                            <td colSpan="100%" style={{
+                                                textAlign: "center", padding: "48px",
+                                                fontFamily: "'Outfit', sans-serif",
+                                                fontSize: 13, color: T.faint,
+                                            }}>
+                                                No customers to display at the moment.
+                                            </td>
+                                        </tr>
+                                        : customers.map((c) => { // empty array par hamara map allowed hota hai , isliye array me koi issue nhi aata
+                                            const { bg, color } = getAvatarColor(c.name || "");
+                                            const tier = TIER_CONFIG[c.tier] || { bg: "#fef3c7", color: "#92400e", icon: "🥉" }; // ye object se value access kar rahe hai by giving key TIER_CONFIG["Gold"], gold as a key paas kardi TIER_CONFIG OBJECT ME, key kyoki dynamic hai to hame ye notation use karna padega dot notation ki jagah
+                                            const status = STATUS_CONFIG[c.status] || STATUS_CONFIG.Inactive;
+                                            return (
+                                                <tr key={c._id} onClick={() => setSelected(c)}>  {/** ispr click karne se selected ke andar customer dal de rahe hai */}
+                                                    <td>
+                                                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                                                            <div className="cust-avatar" style={{ background: bg, color }}>{getInitials(c.name)}</div>
+                                                            <div>
+                                                                <p style={{
+                                                                    fontFamily: "'Outfit', sans-serif",
+                                                                    fontSize: 13, fontWeight: 600, color: T.text, margin: 0,
+                                                                }}>
+                                                                    {c.name}
+                                                                </p>
+                                                                <p style={{
+                                                                    fontFamily: "'Outfit', sans-serif",
+                                                                    fontSize: 11, color: T.faint, marginTop: 1, marginBottom: 0,
+                                                                }}>
+                                                                    {c.email}
+                                                                </p>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                </td>
-                                                <td style={{ fontFamily: "'Outfit', sans-serif", fontSize: 13, color: T.sub }}>{c.city}</td>
-                                                <td>
-                                                    {c.tier
-                                                        ? <span className="cust-tier" style={{ background: tier.bg, color: tier.color }}>{tier.icon} {c.tier}</span>
-                                                        : <span style={{ fontSize: 12, color: T.faint }}>—</span>
-                                                    }
-                                                </td>
-                                                <td style={{
-                                                    fontFamily: "'Lora', serif",
-                                                    fontSize: 18, fontWeight: 700, color: T.text,
-                                                }}>
-                                                    {c.totalOrders ?? "—"}
-                                                </td>
-                                                <td style={{
-                                                    fontFamily: "'Lora', serif",
-                                                    fontSize: 18, fontWeight: 700, color: T.text,
-                                                }}>
-                                                    {c.totalSpent != null ? fmtAmount(c.totalSpent) : "—"}
-                                                </td>
-                                                <td style={{ fontFamily: "'Outfit', sans-serif", fontSize: 12, color: T.sub }}>
-                                                    {c.lastActivity ? fmtDate(c.lastActivity) : "—"}
-                                                </td>
-                                                <td>
-                                                    <span className="cust-status" style={{ background: status.bg, color: status.color, border: `1px solid ${status.border}` }}>
-                                                        <span style={{ width: 5, height: 5, borderRadius: "50%", background: status.dot }} />
-                                                        {c.status || "—"}
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                        );
-                                    })
+                                                    </td>
+                                                    <td style={{ fontFamily: "'Outfit', sans-serif", fontSize: 13, color: T.sub }}>{c.city}</td>
+                                                    <td>
+                                                        {c.tier
+                                                            ? <span className="cust-tier" style={{ background: tier.bg, color: tier.color }}>{tier.icon} {c.tier}</span>
+                                                            : <span style={{ fontSize: 12, color: T.faint }}>—</span>
+                                                        }
+                                                    </td>
+                                                    <td style={{
+                                                        fontFamily: "'Lora', serif",
+                                                        fontSize: 18, fontWeight: 700, color: T.text,
+                                                    }}>
+                                                        {c.totalOrders ?? "—"}
+                                                    </td>
+                                                    <td style={{
+                                                        fontFamily: "'Lora', serif",
+                                                        fontSize: 18, fontWeight: 700, color: T.text,
+                                                    }}>
+                                                        {c.totalSpent != null ? fmtAmount(c.totalSpent) : "—"}
+                                                    </td>
+                                                    <td style={{ fontFamily: "'Outfit', sans-serif", fontSize: 12, color: T.sub }}>
+                                                        {c.lastActivity ? fmtDate(c.lastActivity) : "—"}
+                                                    </td>
+                                                    <td>
+                                                        <span className="cust-status" style={{ background: status.bg, color: status.color, border: `1px solid ${status.border}` }}>
+                                                            <span style={{ width: 5, height: 5, borderRadius: "50%", background: status.dot }} />
+                                                            {c.status || "—"}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })
                                 }
                             </tbody>
                         </table>

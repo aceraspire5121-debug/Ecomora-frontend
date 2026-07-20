@@ -14,6 +14,7 @@ const CartCont = () => {
   const requestId = useRef(0);
   const oldcart = useRef([]);
   const navigate = useNavigate();
+  const [loading, setloading] = useState(false)
 
   const showSnackbar = (message, type = "success") => {
     setmsg(message);
@@ -22,6 +23,8 @@ const CartCont = () => {
   };
 
   const fetchCart = async () => {
+    try{
+      setloading(true);
     const token = localStorage.getItem("CommerceToken");
     const res = await fetch(`${import.meta.env.VITE_API_URL}/api/cart/products`, {
       headers: { Authorization: `Bearer ${token}` },
@@ -29,6 +32,12 @@ const CartCont = () => {
     const data = await res.json();
     setcartItems(data.cart.items);
     oldcart.current = structuredClone(data.cart.items);
+  }catch(err)
+  {
+console.error("Error fetching cart:", err);
+  } finally {
+    setloading(false);
+  }
   };
 
   useEffect(() => { fetchCart(); }, []);
@@ -449,59 +458,69 @@ const CartCont = () => {
 
           <div className="cc-layout">
             {/* ── Items column ── */}
-            <div className="cc-items-col">
-              {cartItems.map((item) => (
-                <div key={item.product._id} className="cc-item-card">
-                  <div className="cc-item-inner">
-                    <img
-                      src={item.product.images?.[0]?.url || "https://via.placeholder.com/150"}
-                      alt={item.product.name}
-                      className="cc-item-img"
-                    />
-                    <div className="cc-item-body">
-                      <h3 className="cc-item-name">{item.product.name}</h3>
-                      <p className="cc-item-cat">{item.product.category}</p>
-                      <div className="cc-item-footer">
-                        {/* Qty stepper */}
-                        <div className="cc-qty-wrap">
-                          <button className="cc-qty-btn" onClick={() => manageQuantity(item, false)}>
-                            <RemoveIcon sx={{ fontSize: 14 }} />
-                          </button>
-                          <span className="cc-qty-val">{item.quantity}</span>
-                          <button className="cc-qty-btn" onClick={() => manageQuantity(item, true)}>
-                            <AddIcon sx={{ fontSize: 14 }} />
-                          </button>
-                        </div>
+          <div className="cc-items-col">
+  {loading ? (
+    <div style={{
+      textAlign: "center", padding: "60px 20px",
+      background: "#fff", borderRadius: 18,
+      border: "1px dashed rgba(226,232,240,0.9)",
+    }}>
+      <p style={{ fontFamily: "'Lora',serif", fontSize: "1.2rem", color: "#94a3b8", margin: "0 0 6px" }}>
+        Loading your cart…
+      </p>
+    </div>
+  ) : cartItems.length === 0 ? (
+    <div style={{
+      textAlign: "center", padding: "60px 20px",
+      background: "#fff", borderRadius: 18,
+      border: "1px dashed rgba(226,232,240,0.9)",
+    }}>
+      <p style={{ fontFamily: "'Lora',serif", fontSize: "1.2rem", color: "#94a3b8", margin: "0 0 6px" }}>
+        Your cart is empty
+      </p>
+      <p style={{ fontFamily: "'Outfit',sans-serif", fontSize: "0.8rem", color: "#cbd5e1", margin: 0 }}>
+        Add some products to get started
+      </p>
+    </div>
+  ) : (
+    cartItems.map((item) => (
+      <div key={item.product._id} className="cc-item-card">
+        <div className="cc-item-inner">
+          <img
+            src={item.product.images?.[0]?.url || "https://via.placeholder.com/150"}
+            alt={item.product.name}
+            className="cc-item-img"
+          />
+          <div className="cc-item-body">
+            <h3 className="cc-item-name">{item.product.name}</h3>
+            <p className="cc-item-cat">{item.product.category}</p>
+            <div className="cc-item-footer">
+              {/* Qty stepper */}
+              <div className="cc-qty-wrap">
+                <button className="cc-qty-btn" onClick={() => manageQuantity(item, false)}>
+                  <RemoveIcon sx={{ fontSize: 14 }} />
+                </button>
+                <span className="cc-qty-val">{item.quantity}</span>
+                <button className="cc-qty-btn" onClick={() => manageQuantity(item, true)}>
+                  <AddIcon sx={{ fontSize: 14 }} />
+                </button>
+              </div>
 
-                        <div className="cc-item-right">
-                          <span className="cc-item-price">
-                            ₹{(item.product.price * item.quantity).toLocaleString("en-IN")}
-                          </span>
-                          <button className="cc-delete-btn" onClick={() => deleteFromCart(item)}>
-                            <DeleteOutlineIcon sx={{ fontSize: 16 }} />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-
-              {cartItems.length === 0 && (
-                <div style={{
-                  textAlign: "center", padding: "60px 20px",
-                  background: "#fff", borderRadius: 18,
-                  border: "1px dashed rgba(226,232,240,0.9)",
-                }}>
-                  <p style={{ fontFamily: "'Lora',serif", fontSize: "1.2rem", color: "#94a3b8", margin: "0 0 6px" }}>
-                    Your cart is empty
-                  </p>
-                  <p style={{ fontFamily: "'Outfit',sans-serif", fontSize: "0.8rem", color: "#cbd5e1", margin: 0 }}>
-                    Add some products to get started
-                  </p>
-                </div>
-              )}
+              <div className="cc-item-right">
+                <span className="cc-item-price">
+                  ₹{(item.product.price * item.quantity).toLocaleString("en-IN")}
+                </span>
+                <button className="cc-delete-btn" onClick={() => deleteFromCart(item)}>
+                  <DeleteOutlineIcon sx={{ fontSize: 16 }} />
+                </button>
+              </div>
             </div>
+          </div>
+        </div>
+      </div>
+    ))
+  )}
+</div>
 
             {/* ── Summary column ── */}
             <div className="cc-summary-col">
